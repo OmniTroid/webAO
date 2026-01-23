@@ -21,6 +21,7 @@ import {
   startFirstTickCheck,
   startSecondTickCheck,
 } from "./utils/handleICSpeaking";
+import { AudioElement } from "../audio/opusPolyfill";
 
 const viewport = (): Viewport => {
   let animating = false;

@@ -1,15 +1,16 @@
 import { opusCheck } from "../../dom/opusCheck";
+import { wrapAudioElement, AudioElement } from "../../audio/opusPolyfill";
 
-export const createBlipsChannels = () => {
+export const createBlipsChannels = (): AudioElement[] => {
   const blipSelectors = document.getElementsByClassName(
     "blipSound",
   ) as HTMLCollectionOf<HTMLAudioElement>;
 
-  const blipChannels = [...blipSelectors];
   // Allocate multiple blip audio channels to make blips less jittery
-  blipChannels.forEach((channel: HTMLAudioElement) => (channel.volume = 0.5));
-  blipChannels.forEach(
-    (channel: HTMLAudioElement) => (channel.onerror = opusCheck(channel)),
-  );
+  const blipChannels = [...blipSelectors].map((channel: HTMLAudioElement) => {
+    channel.volume = 0.5;
+    channel.onerror = opusCheck(channel);
+    return wrapAudioElement(channel);
+  });
   return blipChannels;
 };

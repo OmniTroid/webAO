@@ -57,6 +57,7 @@
     "core-js": "^3.47.0",
     "golden-layout": "^2.6.0",
     "jest-environment-jsdom": "^29.7.0",
+    "ogg-opus-decoder": "^1.7.3",
     "regenerator-runtime": "^0.13.11",
     "source-map-loader": "^4.0.2",
     "ts-loader": "^9.5.4"

@@ -22,6 +22,7 @@ import {
 } from "./client/fetchLists";
 import getCookie from "./utils/getCookie";
 import setCookie from "./utils/setCookie";
+import { initOpusPolyfill } from "./audio/opusPolyfill";
 const { ip: serverIP, connect, mode, theme, serverName } = queryParser();
 
 document.title = serverName;
@@ -68,8 +69,11 @@ const fpPromise = FingerprintJS.load();
 
 fpPromise
   .then((fp) => fp.get())
-  .then((result) => {
+  .then(async (result) => {
     hdid = result.visitorId;
+
+    // Initialize Opus polyfill for browsers without native support (Safari/iOS)
+    await initOpusPolyfill();
 
     let connectionString = connect;
 

@@ -1,5 +1,6 @@
 /* eslint @typescript-eslint/ban-types: "off" */
 import { ChatMsg } from "./ChatMsg";
+import { AudioElement } from "../../audio/opusPolyfill";
 
 export interface Viewport {
   getTextNow: Function;
@@ -24,7 +25,7 @@ export interface Viewport {
   getTestimonyUpdater: Function;
   getTheme: Function;
   setTheme: Function;
-  testimonyAudio: HTMLAudioElement;
+  testimonyAudio: AudioElement;
   chat_tick: Function;
   playSFX: Function;
   set_side: Function;
@@ -34,10 +35,10 @@ export interface Viewport {
   setSfxAudio: Function;
   getSfxAudio: Function;
   getBackgroundFolder: Function;
-  blipChannels: HTMLAudioElement[];
-  music: any;
+  blipChannels: AudioElement[];
+  music: AudioElement[];
   setBackgroundName: Function;
   getBackgroundName: Function;
-  shoutaudio: HTMLAudioElement;
+  shoutaudio: AudioElement;
   updater: any;
 }

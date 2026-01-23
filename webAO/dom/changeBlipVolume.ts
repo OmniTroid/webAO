@@ -1,5 +1,6 @@
 import setCookie from "../utils/setCookie";
 import { client } from "../client";
+import { AudioElement } from "../audio/opusPolyfill";
 /**
  * Triggered by the blip volume slider.
  */
@@ -8,8 +9,8 @@ export const changeBlipVolume = () => {
     document.getElementById("client_bvolume")
   )).value;
   client.viewport.blipChannels.forEach(
-    (channel: HTMLAudioElement) => (channel.volume = Number(blipVolume)),
+    (channel: AudioElement) => (channel.volume = Number(blipVolume)),
   );
   setCookie("blipVolume", blipVolume);
 };
-window.changeBlipVolume = changeBlipVolume;
+(window as any).changeBlipVolume = changeBlipVolume;

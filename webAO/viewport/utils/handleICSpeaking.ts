@@ -13,6 +13,7 @@ import { COLORS } from "../constants/colors";
 import mlConfig from "../../utils/aoml";
 import request from "../../services/request";
 import fileExists from "../../utils/fileExists";
+import { AudioElement } from "../../audio/opusPolyfill";
 
 let attorneyMarkdown: ReturnType<typeof mlConfig> | null = null;
 
@@ -287,7 +288,7 @@ export const handle_ic_speaking = async (playerChatMsg: ChatMsg) => {
   }
 
   client.viewport.blipChannels.forEach(
-    (channel: HTMLAudioElement) =>
+    (channel: AudioElement) =>
       (channel.src = `${AO_HOST}sounds/blips/${encodeURI(
         client.viewport.getChatmsg().blips.toLowerCase(),
       )}.opus`),
