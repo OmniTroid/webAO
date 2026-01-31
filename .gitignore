@@ -52,9 +52,13 @@ Temporary Items
 # Node module directory
 node_modules
 
-# webpack shit
+# built webpack files
 *.b.js
 *.b.js.*
 
 # Jetbrains
 .idea/
+
+# lockfiles
+bun.lock
+package-lock.json
