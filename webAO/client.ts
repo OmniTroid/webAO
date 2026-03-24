@@ -282,6 +282,7 @@ class Client extends EventEmitter {
     document.getElementById("client_waiting").style.display = "block";
     document.getElementById("client_loading").style.display = "block";
     document.getElementById("client_charselect").style.display = "none";
+    appendICNotice("Connected");
     client.joinServer();
   }
 
@@ -297,7 +298,7 @@ class Client extends EventEmitter {
       if (this.areas.length > 0) {
         document.getElementById("client_errortext").textContent =
           "You were disconnected from the server.";
-        appendICNotice("Disconnected from the server.");
+        appendICNotice("Disconnected");
       } else {
         document.getElementById("client_errortext").textContent =
           "Could not connect to the server.";
