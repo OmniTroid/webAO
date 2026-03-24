@@ -11,6 +11,8 @@ export function ReconnectButton() {
   // Build the connection string the same way the initial connection does
   let connectionString = connect;
   if (!connectionString && serverIP) {
+    // if connectionString is not set, try IP
+    // and just guess ws, though it could be wss
     connectionString = `ws://${serverIP}`;
   }
 
