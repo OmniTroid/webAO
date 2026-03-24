@@ -1,4 +1,5 @@
 import { client } from "../../client";
+import { renderAreaList } from "../../dom/renderAreaList";
 import { safeTags } from "../../encoding";
 
 /**
@@ -10,7 +11,6 @@ export const handleARUP = (args: string[]) => {
   for (let i = 0; i < args.length - 1; i++) {
     if (client.areas[i]) {
       // the server sends us ARUP before we even get the area list
-      const thisarea = document.getElementById(`area${i}`)!;
       switch (Number(args[0])) {
         case 0: // playercount
           client.areas[i].players = Number(args[i + 1]);
@@ -25,18 +25,7 @@ export const handleARUP = (args: string[]) => {
           client.areas[i].locked = safeTags(args[i + 1]);
           break;
       }
-
-      thisarea.className = `area-button area-${client.areas[
-        i
-      ].status.toLowerCase()}`;
-
-      thisarea.innerText = `${client.areas[i].name} (${client.areas[i].players}) [${client.areas[i].status}]`;
-
-      thisarea.title =
-        `Players: ${client.areas[i].players}\n` +
-        `Status: ${client.areas[i].status}\n` +
-        `CM: ${client.areas[i].cm}\n` +
-        `Area lock: ${client.areas[i].locked}`;
     }
   }
+  renderAreaList();
 };

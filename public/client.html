@@ -103,7 +103,7 @@
         <p style="color: red">webAO requires JavaScript to work</p>
       </noscript>
       <div id="client_loading">
-        <h1 id="client_loadingtext">Loading</h1>
+        <h1 id="client_loadingtext">Loading...</h1>
       </div>
       <div id="client_secondfactor" style="display: none">
         <center>
@@ -119,32 +119,33 @@
           </form>
         </center>
       </div>
-      <div id="client_charselect">
-        <p>Choose your character</p>
-        <button onclick="pickChar(-1)">Or spectate</button>
-        <br /><br />
-        <input
-          id="client_charactersearch"
-          placeholder="Search"
-          oninput="chartable_filter(event)"
-        />
-        <br /><br />
+      <div id="client_charselect" style="display: none">
+        <div id="client_charselect_toolbar">
+          <input
+            id="client_charactersearch"
+            placeholder="Search"
+            oninput="chartable_filter(event)"
+          />
+          <button id="client_spectate" onclick="pickChar(-1)">Spectate</button>
+        </div>
         <div id="client_chartable"></div>
       </div>
-      <div id="client_error" class="error" style="display: none">
-        <h1 id="client_errortext">Connection error.</h1>
-        <p style="color: #a00">
-          Code:
-          <span id="error_id">(none)</span>
+    </div>
+    <div id="client_error_overlay" style="display: none">
+      <div id="client_error">
+        <div id="client_error_icon">&#x26A0;</div>
+        <h2 id="client_errortext">Connection lost.</h2>
+        <p id="client_error_code">
+          Error code: <span id="error_id">(none)</span>
+        </p>
+        <button id="client_reconnect" onclick="ReconnectButton()">
+          Reconnect
+        </button>
+        <p id="client_error_help">
+          Having trouble?
+          <a href="https://discord.gg/9rYQVVQ" target="_blank">Join us on Discord</a>
         </p>
       </div>
-      <p>
-        Having trouble?
-        <a href="https://discord.gg/9rYQVVQ">Join us on Discord</a>
-      </p>
-      <button id="client_reconnect" onclick="ReconnectButton()">
-        Reconnect
-      </button>
     </div>
   </body>
 
@@ -954,6 +955,11 @@
           If you don't agree, disable cookies for this site in your
           browser.</span
         >
+        <br />
+        <br />
+        <button id="client_disconnect" onclick="DisconnectButton()">
+          Disconnect
+        </button>
       </span>
 
       <!-- About section -->

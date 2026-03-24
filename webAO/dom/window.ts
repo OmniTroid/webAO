@@ -30,6 +30,7 @@ declare global {
     pickChar: (ccharacter: any) => void;
     chartable_filter: (_event: any) => void;
     ReconnectButton: (_event: any) => void;
+    DisconnectButton: () => void;
     opusCheck: (channel: HTMLAudioElement) => OnErrorEventHandlerNonNull;
     imgError: (image: any) => void;
     charError: (image: any) => void;

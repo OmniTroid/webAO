@@ -8,13 +8,10 @@ import { createArea } from "../../client/createArea";
  * @param {Array} args packet arguments
  */
 export const handleSM = (args: string[]) => {
-  document.getElementById("client_loadingtext")!.innerHTML = "Loading Music ";
   client.resetMusicList();
   client.resetAreaList();
 
   client.musics_time = false;
-
-  document.getElementById("client_loadingtext")!.innerHTML = `Loading Music`;
 
   for (let i = 1; i < args.length - 1; i++) {
     // Check when found the song for the first time

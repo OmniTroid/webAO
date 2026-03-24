@@ -8,8 +8,6 @@ import { handleCharacterInfo } from "../../client/handleCharacterInfo";
  */
 export const handleCI = (args: string[]) => {
   // Loop through the 10 characters that were sent
-  document.getElementById("client_loadingtext")!.innerHTML =
-    `Loading Character ${args[1]}/${client.char_list_length}`;
   for (let i = 2; i <= args.length - 2; i++) {
     if (i % 2 === 0) {
       const chargs = args[i].split("&");
