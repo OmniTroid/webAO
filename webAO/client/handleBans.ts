@@ -11,5 +11,4 @@ export const handleBans = (type: string, reason: string) => {
     `${type}:<br>${safeTags(reason).replace(/\n/g, "<br />")}`;
   (<HTMLElement>document.getElementById("client_reconnect")).style.display =
     "none";
-  alert(type + ":\r" + reason);
 };
