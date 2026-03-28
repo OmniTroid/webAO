@@ -1,5 +1,4 @@
 import { client } from "../client";
-import { appendICNotice } from "../client/appendICNotice";
 import { renderPlayerList } from "./renderPlayerList";
 /**
  * Triggered when an item on the area list is clicked.
@@ -8,7 +7,11 @@ import { renderPlayerList } from "./renderPlayerList";
 export function area_click(el: HTMLElement) {
   const area = client.areas[el.id.substring(4)].name;
   client.sender.sendMusicChange(area);
-  appendICNotice(`switched to ${el.textContent}`);
+
+  const areaHr = document.createElement("div");
+  areaHr.className = "hrtext";
+  areaHr.textContent = `switched to ${el.textContent}`;
+  document.getElementById("client_log")!.appendChild(areaHr);
   client.area = Number(el.id.substring(4));
   renderPlayerList();
 }

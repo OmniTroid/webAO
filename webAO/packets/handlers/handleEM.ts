@@ -10,6 +10,7 @@ import { isAudio } from "../../client/isAudio";
  * @param {Array} args packet arguments
  */
 export const handleEM = (args: string[]) => {
+  document.getElementById("client_loadingtext")!.innerHTML = "Loading Music";
   if (args[1] === "0") {
     client.resetMusicList();
     client.resetAreaList();

@@ -11,6 +11,8 @@ import { prepChat } from "../../encoding";
  * @param {Array} args packet arguments
  */
 export const handleEI = (args: string[]) => {
+  document.getElementById("client_loadingtext")!.innerHTML =
+    `Loading Evidence ${args[1]}/${client.evidence_list_length}`;
   const evidenceID = Number(args[1]);
   const arg = args[2].split("&");
   client.evidences[evidenceID] = {

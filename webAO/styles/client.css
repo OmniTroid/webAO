@@ -152,12 +152,10 @@
   justify-content: center;
   text-align: center;
   align-items: center;
-  box-sizing: border-box;
   font-size: large;
-  overflow-y: auto;
+  overflow-y: scroll;
   z-index: 100;
-  background: #333;
-  border: 1px solid #000;
+  background: #555;
 }
 
 #client_loading {
@@ -166,7 +164,8 @@
   justify-content: center;
   text-align: center;
   align-items: center;
-  color: #fff;
+  background: black;
+  color: lightgreen;
   font-size: large;
 }
 
@@ -193,22 +192,7 @@
   display: block;
   text-align: center;
   margin: 0 auto;
-  padding: 10px;
-  background: #333;
-  color: #eee;
-}
-
-#client_charselect_toolbar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  margin-top: 5px;
-  margin-bottom: 10px;
-}
-
-#client_charactersearch {
-  width: 150px;
+  background: #444;
 }
 
 #client_icwrapper {

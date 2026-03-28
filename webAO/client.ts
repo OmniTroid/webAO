@@ -14,7 +14,6 @@ import { EventEmitter } from "events";
 import { onReplayGo } from "./dom/onReplayGo";
 import { packetHandler } from "./packets/packetHandler";
 import { appendICNotice } from "./client/appendICNotice";
-import { renderAreaList } from "./dom/renderAreaList";
 import { loadResources } from "./client/loadResources";
 import { AO_HOST } from "./client/aoHost";
 import {
@@ -427,7 +426,7 @@ class Client extends EventEmitter {
 
   resetAreaList() {
     this.areas = [];
-    renderAreaList();
+    document.getElementById("areas").innerHTML = "";
     fetchBackgroundList();
     fetchEvidenceList();
     fetchCharacterList();

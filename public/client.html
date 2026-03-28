@@ -103,7 +103,7 @@
         <p style="color: red">webAO requires JavaScript to work</p>
       </noscript>
       <div id="client_loading">
-        <h1 id="client_loadingtext">Loading...</h1>
+        <h1 id="client_loadingtext">Loading</h1>
       </div>
       <div id="client_secondfactor" style="display: none">
         <center>
@@ -119,15 +119,16 @@
           </form>
         </center>
       </div>
-      <div id="client_charselect" style="display: none">
-        <div id="client_charselect_toolbar">
-          <input
-            id="client_charactersearch"
-            placeholder="Search"
-            oninput="chartable_filter(event)"
-          />
-          <button id="client_spectate" onclick="pickChar(-1)">Spectate</button>
-        </div>
+      <div id="client_charselect">
+        <p>Choose your character</p>
+        <button onclick="pickChar(-1)">Or spectate</button>
+        <br /><br />
+        <input
+          id="client_charactersearch"
+          placeholder="Search"
+          oninput="chartable_filter(event)"
+        />
+        <br /><br />
         <div id="client_chartable"></div>
       </div>
     </div>
@@ -988,6 +989,7 @@
   <template id="log">
     <meta name="frame-title" lang="en" content="Log" />
     <div id="client_log">
+      <div class="hrtext">&#8595; log starts here &#8595;</div>
     </div>
   </template>
 
