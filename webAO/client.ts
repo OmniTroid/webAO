@@ -22,7 +22,8 @@ import {
 } from "./client/fetchLists";
 import getCookie from "./utils/getCookie";
 import setCookie from "./utils/setCookie";
-const { ip: serverIP, connect, mode, theme, serverName } = queryParser();
+const { ip: serverIP, connect, mode, theme, serverName, char: autoChar, area: autoArea } = queryParser();
+export { autoChar, autoArea };
 
 document.title = serverName;
 

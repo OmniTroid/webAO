@@ -7,6 +7,8 @@ interface QueryParams {
   asset: string;
   theme: string;
   serverName: string;
+  char: string;
+  area: string;
 }
 
 const queryParser = (): QueryParams => {
@@ -19,6 +21,8 @@ const queryParser = (): QueryParams => {
     asset: urlParams.get("asset") || `${protocol}//attorneyoffline.de/base/`,
     theme: urlParams.get("theme") || "default",
     serverName: urlParams.get("serverName") || "Attorney Online session",
+    char: urlParams.get("char") || "",
+    area: urlParams.get("area") || "",
   };
   return queryParams as QueryParams;
 };
