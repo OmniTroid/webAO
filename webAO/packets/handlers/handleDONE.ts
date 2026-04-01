@@ -1,6 +1,5 @@
 import queryParser from "../../utils/queryParser";
 import { client, clientState, autoChar } from "../../client";
-import { pickChar } from "../../dom/pickChar";
 
 const { mode } = queryParser();
 /**
@@ -19,11 +18,16 @@ export const handleDONE = (_args: string[]) => {
   }
 
   if (autoChar) {
+    // Hide charselect immediately (spectator mode) so the user isn't stuck
+    // on the selection screen. If the CC request succeeds, PV will confirm it.
+    document.getElementById("client_waiting")!.style.display = "none";
+    document.getElementById("client_charselect")!.style.display = "none";
+
     const charIndex = client.chars.findIndex(
       (c: any) => c && c.name.toLowerCase() === autoChar.toLowerCase()
     );
     if (charIndex !== -1) {
-      pickChar(charIndex);
+      client.sender.sendCharacter(charIndex);
     }
   }
 };
