@@ -1,5 +1,6 @@
 import queryParser from "../../utils/queryParser";
-import { client, clientState, autoChar } from "../../client";
+import { client, clientState, autoChar, autoArea } from "../../client";
+import { area_click } from "../../dom/areaClick";
 
 const { mode } = queryParser();
 /**
@@ -15,6 +16,18 @@ export const handleDONE = (_args: string[]) => {
   if (mode === "watch") {
     // Spectators don't need to pick a character
     document.getElementById("client_waiting")!.style.display = "none";
+  }
+
+  if (autoArea) {
+    const areaIndex = client.areas.findIndex(
+      (a: any) => a && a.name.toLowerCase() === autoArea.toLowerCase()
+    );
+    if (areaIndex !== -1) {
+      const el = document.getElementById(`area${areaIndex}`);
+      if (el) {
+        area_click(el as HTMLElement);
+      }
+    }
   }
 
   if (autoChar) {

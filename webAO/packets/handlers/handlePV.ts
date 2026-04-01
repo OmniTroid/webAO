@@ -1,12 +1,9 @@
-import { client, autoArea } from "../../client";
+import { client } from "../../client";
 import fileExists from "../../utils/fileExists";
 import { updateActionCommands } from "../../dom/updateActionCommands";
 import { pickEmotion } from "../../dom/pickEmotion";
 import { AO_HOST } from "../../client/aoHost";
 import { ensureCharIni } from "../../client/handleCharacterInfo";
-import { area_click } from "../../dom/areaClick";
-
-let autoAreaDone = false;
 
 function addEmoteButton(i: number, imgurl: string, desc: string) {
   const emotesList = document.getElementById("client_emo");
@@ -106,16 +103,4 @@ export const handlePV = async (args: string[]) => {
     document.getElementById("button_4")!.style.display = "none";
   }
 
-  if (autoArea && !autoAreaDone) {
-    autoAreaDone = true;
-    const areaIndex = client.areas.findIndex(
-      (a: any) => a && a.name.toLowerCase() === autoArea.toLowerCase()
-    );
-    if (areaIndex !== -1) {
-      const el = document.getElementById(`area${areaIndex}`);
-      if (el) {
-        area_click(el as HTMLElement);
-      }
-    }
-  }
 };
