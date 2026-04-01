@@ -3,6 +3,7 @@
 import { client, delay } from "../client";
 import { UPDATE_INTERVAL } from "../client";
 import setEmote from "../client/setEmote";
+import setEmoteFromUrl from "../client/setEmoteFromUrl";
 import { AO_HOST } from "../client/aoHost";
 import { Viewport } from "./interfaces/Viewport";
 import { createBlipsChannels } from "./utils/createBlipChannels";
@@ -162,7 +163,9 @@ const viewport = (): Viewport => {
       const nextCharacterElement = chatmsg.parsed[textnow.length];
       const flash = async () => {
         const effectlayer = document.getElementById("client_fg");
-        playSFX(`${AO_HOST}sounds/general/sfx-realization.opus`, false);
+        const realizationUrl = chatmsg.preloadedAssets?.realizationSfxUrl
+          ?? `${AO_HOST}sounds/general/sfx-realization.opus`;
+        playSFX(realizationUrl, false);
         effectlayer.style.animation = "flash 0.4s 1";
         await delay(400);
         effectlayer.style.removeProperty("animation");
@@ -170,7 +173,9 @@ const viewport = (): Viewport => {
 
       const shake = async () => {
         const gamewindow = document.getElementById("client_gamewindow");
-        playSFX(`${AO_HOST}sounds/general/sfx-stab.opus`, false);
+        const stabUrl = chatmsg.preloadedAssets?.stabSfxUrl
+          ?? `${AO_HOST}sounds/general/sfx-stab.opus`;
+        playSFX(stabUrl, false);
         gamewindow.style.animation = "shake 0.2s 1";
         await delay(200);
         gamewindow.style.removeProperty("animation");
@@ -247,15 +252,11 @@ const viewport = (): Viewport => {
 
     if (textnow === chatmsg.content) {
       animating = false;
-      setEmote(
-        AO_HOST,
-        client,
-        charName,
-        charEmote,
-        "(a)",
-        false,
-        chatmsg.side,
-      );
+      if (chatmsg.preloadedAssets) {
+        setEmoteFromUrl(chatmsg.preloadedAssets.idleUrl, false, chatmsg.side);
+      } else {
+        setEmote(AO_HOST, client, charName, charEmote, "(a)", false, chatmsg.side);
+      }
       charLayers.style.opacity = "1";
       waitingBox.style.opacity = "1";
       clearTimeout(updater);
@@ -332,12 +333,16 @@ const viewport = (): Viewport => {
       // Effect stuff
       if (chatmsg.screenshake === 1) {
         // Shake screen
-        playSFX(`${AO_HOST}sounds/general/sfx-stab.opus`, false);
+        const stabUrl = chatmsg.preloadedAssets?.stabSfxUrl
+          ?? `${AO_HOST}sounds/general/sfx-stab.opus`;
+        playSFX(stabUrl, false);
         gamewindow.style.animation = "shake 0.2s 1";
       }
       if (chatmsg.flash === 1) {
         // Flash screen
-        playSFX(`${AO_HOST}sounds/general/sfx-realization.opus`, false);
+        const realizationUrl = chatmsg.preloadedAssets?.realizationSfxUrl
+          ?? `${AO_HOST}sounds/general/sfx-realization.opus`;
+        playSFX(realizationUrl, false);
         effectlayer.style.animation = "flash 0.4s 1";
       }
 
@@ -345,8 +350,12 @@ const viewport = (): Viewport => {
       if (chatmsg.preanimdelay > 0) {
         shoutSprite.style.display = "none";
         shoutSprite.style.animation = "";
-        const preanim = chatmsg.preanim.toLowerCase();
-        setEmote(AO_HOST, client, charName, preanim, "", false, chatmsg.side);
+        if (chatmsg.preloadedAssets) {
+          setEmoteFromUrl(chatmsg.preloadedAssets.preanimUrl, false, chatmsg.side);
+        } else {
+          const preanim = chatmsg.preanim.toLowerCase();
+          setEmote(AO_HOST, client, charName, preanim, "", false, chatmsg.side);
+        }
       }
 
       if (chatmsg.other_name) {
@@ -432,41 +441,29 @@ const viewport = (): Viewport => {
         }
 
         if (chatmsg.other_name) {
-          setEmote(
-            AO_HOST,
-            client,
-            pairName,
-            pairEmote,
-            "(a)",
-            true,
-            chatmsg.side,
-          );
+          if (chatmsg.preloadedAssets) {
+            setEmoteFromUrl(chatmsg.preloadedAssets.pairIdleUrl, true, chatmsg.side);
+          } else {
+            setEmote(AO_HOST, client, pairName, pairEmote, "(a)", true, chatmsg.side);
+          }
           pairLayers.style.opacity = "1";
         } else {
           pairLayers.style.opacity = "0";
         }
 
-        setEmote(
-          AO_HOST,
-          client,
-          charName,
-          charEmote,
-          "(b)",
-          false,
-          chatmsg.side,
-        );
+        if (chatmsg.preloadedAssets) {
+          setEmoteFromUrl(chatmsg.preloadedAssets.talkingUrl, false, chatmsg.side);
+        } else {
+          setEmote(AO_HOST, client, charName, charEmote, "(b)", false, chatmsg.side);
+        }
         charLayers.style.opacity = "1";
 
         if (textnow === chatmsg.content) {
-          setEmote(
-            AO_HOST,
-            client,
-            charName,
-            charEmote,
-            "(a)",
-            false,
-            chatmsg.side,
-          );
+          if (chatmsg.preloadedAssets) {
+            setEmoteFromUrl(chatmsg.preloadedAssets.idleUrl, false, chatmsg.side);
+          } else {
+            setEmote(AO_HOST, client, charName, charEmote, "(a)", false, chatmsg.side);
+          }
           charLayers.style.opacity = "1";
           waitingBox.style.opacity = "1";
           animating = false;
@@ -491,12 +488,9 @@ const viewport = (): Viewport => {
         chatmsg.sound !== undefined &&
         (chatmsg.type == 1 || chatmsg.type == 2 || chatmsg.type == 6)
       ) {
-        playSFX(
-          `${AO_HOST}sounds/general/${encodeURI(
-            chatmsg.sound.toLowerCase(),
-          )}.opus`,
-          chatmsg.looping_sfx,
-        );
+        const sfxUrl = chatmsg.preloadedAssets?.emoteSfxUrl
+          ?? `${AO_HOST}sounds/general/${encodeURI(chatmsg.sound.toLowerCase())}.opus`;
+        playSFX(sfxUrl, chatmsg.looping_sfx);
       }
     }
     if (textnow === chatmsg.content) {

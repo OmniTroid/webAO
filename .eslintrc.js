@@ -17,5 +17,6 @@ module.exports = {
   rules: {
     "indent": ["warn", 2, { "SwitchCase": 1 }],
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "@typescript-eslint/no-explicit-any": "off",
   },
 };

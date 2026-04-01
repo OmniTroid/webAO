@@ -1,3 +1,5 @@
+import { PreloadedAssets } from "./PreloadedAssets";
+
 export interface ChatMsg {
   content: string;
   objection: number;
@@ -31,4 +33,5 @@ export interface ChatMsg {
   evidence?: number;
   looping_sfx?: boolean;
   noninterrupting_preanim?: number;
+  preloadedAssets?: PreloadedAssets;
 }
