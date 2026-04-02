@@ -493,7 +493,7 @@ const viewport = (): Viewport => {
         playSFX(sfxUrl, chatmsg.looping_sfx);
       }
     }
-    if (textnow === chatmsg.content) {
+    if (textnow === chatmsg.content && !startFirstTickCheck && !startSecondTickCheck) {
       return;
     }
     if (animating) {
