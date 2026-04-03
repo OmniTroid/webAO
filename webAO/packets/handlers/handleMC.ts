@@ -39,10 +39,9 @@ export const handleMC = (args: string[]) => {
 
   if (charID >= 0) {
     musicname = client.chars[charID].name;
-    const speaker = showname ? "" : `${musicname} `;
-    appendICLog(`${speaker}changed music to ${track} ${looptext}`,showname);
+    appendICLog(`changed music to ${track} ${looptext}`, showname, musicname);
   } else {
-    appendICLog(`The music was changed to ${track} ${looptext}`,showname);
+    appendICLog(`The music was changed to ${track} ${looptext}`, showname);
   }
 
   document.getElementById("client_trackstatustext")!.innerText = track;
