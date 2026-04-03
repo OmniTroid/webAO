@@ -77,7 +77,7 @@ export const set_side = async ({
   if (showSpeedLines === true) {
     court.src = `${AO_HOST}themes/default/${encodeURI(speedLines)}`;
   } else {
-    setBackgroundImage("client_court_classic",client.viewport.getBackgroundName(),bg);
+    setBackgroundImage(court.id, client.viewport.getBackgroundName(), bg);
   }
 
   if (showDesk === true && desk) {
