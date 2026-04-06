@@ -29,7 +29,8 @@ declare global {
     pickEmotion: (emo: number) => void;
     pickChar: (ccharacter: any) => void;
     chartable_filter: (_event: any) => void;
-    ReconnectButton: (_event: any) => void;
+    ReconnectButton: () => void;
+    DisconnectButton: () => void;
     opusCheck: (channel: HTMLAudioElement) => OnErrorEventHandlerNonNull;
     imgError: (image: any) => void;
     charError: (image: any) => void;

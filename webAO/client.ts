@@ -13,6 +13,7 @@ import { Viewport } from "./viewport/interfaces/Viewport";
 import { EventEmitter } from "events";
 import { onReplayGo } from "./dom/onReplayGo";
 import { packetHandler } from "./packets/packetHandler";
+import { appendICNotice } from "./client/appendICNotice";
 import { loadResources } from "./client/loadResources";
 import { AO_HOST } from "./client/aoHost";
 import {
@@ -112,6 +113,8 @@ export enum clientState {
   Connected,
   // Should be set once the client has joined the server (after handshake)
   Joined,
+  // Set when a reconnect attempt is in progress
+  Reconnecting,
 }
 
 export let lastICMessageTime = new Date(0);
@@ -275,6 +278,11 @@ class Client extends EventEmitter {
    */
   onOpen(_e: Event) {
     client.state = clientState.Connected;
+    document.getElementById("client_error_overlay").style.display = "none";
+    document.getElementById("client_waiting").style.display = "block";
+    document.getElementById("client_loading").style.display = "block";
+    document.getElementById("client_charselect").style.display = "none";
+    appendICNotice("Connected");
     client.joinServer();
   }
 
@@ -283,19 +291,21 @@ class Client extends EventEmitter {
    * @param {CloseEvent} e
    */
   onClose(e: CloseEvent) {
-    client.state = clientState.NotConnected;
     console.error(`The connection was closed: ${e.reason} (${e.code})`);
+    if (this.state === clientState.Reconnecting) return;
+    client.state = clientState.NotConnected;
     if (this.banned === false) {
       if (this.areas.length > 0) {
         document.getElementById("client_errortext").textContent =
           "You were disconnected from the server.";
+        appendICNotice("Disconnected");
       } else {
         document.getElementById("client_errortext").textContent =
           "Could not connect to the server.";
       }
+      (<HTMLElement>document.getElementById("client_reconnect")).style.display = "";
     }
-    document.getElementById("client_waiting").style.display = "block";
-    document.getElementById("client_error").style.display = "flex";
+    document.getElementById("client_error_overlay").style.display = "flex";
     document.getElementById("client_loading").style.display = "none";
     document.getElementById("error_id").textContent = String(e.code);
     this.cleanup();
@@ -365,10 +375,14 @@ class Client extends EventEmitter {
    * @param {ErrorEvent} e
    */
   onError(e: ErrorEvent) {
-    client.state = clientState.NotConnected;
     console.error(`A network error occurred`);
     console.error(e);
-    document.getElementById("client_error").style.display = "flex";
+    if (this.state === clientState.Reconnecting) return;
+    client.state = clientState.NotConnected;
+    document.getElementById("client_errortext").textContent =
+      "Could not connect to the server.";
+    (<HTMLElement>document.getElementById("client_reconnect")).style.display = "";
+    document.getElementById("client_error_overlay").style.display = "flex";
     this.cleanup();
   }
 
@@ -377,7 +391,7 @@ class Client extends EventEmitter {
    */
   cleanup() {
     clearInterval(this.checkUpdater);
-    this.serv.close();
+    if (this.serv) this.serv.close();
   }
 
   /**
