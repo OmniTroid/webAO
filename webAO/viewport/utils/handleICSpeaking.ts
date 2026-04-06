@@ -2,17 +2,16 @@ import { ChatMsg } from "../interfaces/ChatMsg";
 import { client } from "../../client";
 import { appendICLog } from "../../client/appendICLog";
 import { checkCallword } from "../../client/checkCallword";
-import setEmote from "../../client/setEmote";
+import setEmoteFromUrl from "../../client/setEmoteFromUrl";
 import { AO_HOST } from "../../client/aoHost";
 import { SHOUTS } from "../constants/shouts";
-import getAnimLength from "../../utils/getAnimLength";
 import { setChatbox } from "../../dom/setChatbox";
 import { resizeChatbox } from "../../dom/resizeChatbox";
 import transparentPng from "../../constants/transparentPng";
 import { COLORS } from "../constants/colors";
 import mlConfig from "../../utils/aoml";
 import request from "../../services/request";
-import fileExists from "../../utils/fileExists";
+import preloadMessageAssets from "./preloadMessageAssets";
 
 let attorneyMarkdown: ReturnType<typeof mlConfig> | null = null;
 
@@ -41,7 +40,7 @@ export const setStartThirdTickCheck = (val: boolean) => {
  * This sets up everything before the tick() loops starts
  * a lot of things can probably be moved here, like starting the shout animation if there is one
  * TODO: the preanim logic, on the other hand, should probably be moved to tick()
- * @param {object} chatmsg the new chat message
+ * @param playerChatMsg the new chat message
  */
 export const handle_ic_speaking = async (playerChatMsg: ChatMsg) => {
   client.viewport.setChatmsg(playerChatMsg);
@@ -125,26 +124,19 @@ export const handle_ic_speaking = async (playerChatMsg: ChatMsg) => {
     client.viewport.getSfxAudio(),
   );
 
-  setEmote(
+  // Preload all assets before any visual changes - resolves URLs and primes browser cache
+  const preloaded = await preloadMessageAssets(
+    client.viewport.getChatmsg(),
     AO_HOST,
-    client,
-    client.viewport.getChatmsg().name!.toLowerCase(),
-    client.viewport.getChatmsg().sprite!,
-    "(a)",
-    false,
-    client.viewport.getChatmsg().side,
+    client.emote_extensions,
   );
+  client.viewport.getChatmsg().preloadedAssets = preloaded;
+
+  // Set initial idle emote using pre-cached URLs (synchronous, images already in cache)
+  setEmoteFromUrl(preloaded.idleUrl, false, client.viewport.getChatmsg().side);
 
   if (client.viewport.getChatmsg().other_name) {
-    setEmote(
-      AO_HOST,
-      client,
-      client.viewport.getChatmsg().other_name.toLowerCase(),
-      client.viewport.getChatmsg().other_emote!,
-      "(a)",
-      false,
-      client.viewport.getChatmsg().side,
-    );
+    setEmoteFromUrl(preloaded.pairIdleUrl, true, client.viewport.getChatmsg().side);
   }
 
   // gets which shout shall played
@@ -164,11 +156,8 @@ export const handle_ic_speaking = async (playerChatMsg: ChatMsg) => {
     }
     shoutSprite.style.display = "block";
 
-    const perCharPath = `${AO_HOST}characters/${encodeURI(
-      client.viewport.getChatmsg().name.toLowerCase(),
-    )}/${shout}.opus`;
-    const exists = await fileExists(perCharPath);
-    client.viewport.shoutaudio.src = exists ? perCharPath : client.resources[shout].sfx;
+    // Use preloaded shout SFX URL (already resolved in parallel)
+    client.viewport.shoutaudio.src = preloaded.shoutSfxUrl ?? client.resources[shout].sfx;
     client.viewport.shoutaudio.play().catch(() => {});
     client.viewport.setShoutTimer(client.resources[shout].duration);
   } else {
@@ -176,28 +165,22 @@ export const handle_ic_speaking = async (playerChatMsg: ChatMsg) => {
   }
 
   client.viewport.getChatmsg().startpreanim = true;
-  let gifLength = 0;
 
-  if (
+  // Use preloaded preanim duration (already computed in parallel by preloader)
+  const hasPreanim =
     client.viewport.getChatmsg().type === 1 &&
     client.viewport.getChatmsg().preanim !== "-" &&
-    client.viewport.getChatmsg().preanim !== ""
-  ) {
-    //we have a preanim
-    chatContainerBox.style.opacity = "0";
+    client.viewport.getChatmsg().preanim !== "";
 
-    gifLength = await getAnimLength(
-      `${AO_HOST}characters/${encodeURI(
-        client.viewport.getChatmsg().name!.toLowerCase(),
-      )}/${encodeURI(client.viewport.getChatmsg().preanim)}`,
-    );
+  if (hasPreanim) {
+    chatContainerBox.style.opacity = "0";
     client.viewport.getChatmsg().startspeaking = false;
   } else {
     client.viewport.getChatmsg().startspeaking = true;
     if (client.viewport.getChatmsg().content.trim() !== "")
       chatContainerBox.style.opacity = "1";
   }
-  client.viewport.getChatmsg().preanimdelay = gifLength;
+  client.viewport.getChatmsg().preanimdelay = preloaded.preanimDuration;
   const setAside = {
     position: client.viewport.getChatmsg().side,
     showSpeedLines: false,
