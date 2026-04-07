@@ -1,4 +1,3 @@
-import setCookie from "../utils/setCookie";
 import { client } from "../client";
 /**
  * Triggered by the blip volume slider.
@@ -10,6 +9,6 @@ export const changeBlipVolume = () => {
   client.viewport.blipChannels.forEach(
     (channel: HTMLAudioElement) => (channel.volume = Number(blipVolume)),
   );
-  setCookie("blipVolume", blipVolume);
+  localStorage.setItem("blipVolume", blipVolume);
 };
 window.changeBlipVolume = changeBlipVolume;

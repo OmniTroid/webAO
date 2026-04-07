@@ -21,8 +21,6 @@ import {
   fetchEvidenceList,
   fetchCharacterList,
 } from "./client/fetchLists";
-import getCookie from "./utils/getCookie";
-import setCookie from "./utils/setCookie";
 const { ip: serverIP, connect, mode, theme, serverName, char: autoChar, area: autoArea } = queryParser();
 export { autoChar, autoArea };
 
@@ -262,8 +260,8 @@ class Client extends EventEmitter {
    */
   joinServer() {
     this.sender.sendServer(`HI#${hdid}#%`);
-    if (this.enableCaptcha && getCookie("hdid") !== hdid) {
-      this.sender.sendServer(getCookie("hdid"));
+    if (this.enableCaptcha && localStorage.getItem("hdid") !== hdid) {
+      this.sender.sendServer(localStorage.getItem("hdid"));
       document.getElementById("client_secondfactor").style.display = "block";
       document.getElementById("client_charselect").remove();
       document.getElementById("client_ooc").remove();

@@ -1,13 +1,12 @@
 import { client } from "../../client";
 import { escapeChat } from "../../encoding";
-import setCookie from "../../utils/setCookie";
 import { saveChatlogHandle } from "../../client/saveChatLogHandle";
 /**
  * Sends an out-of-character chat message.
  * @param {string} message the message to send
  */
 export const sendOOC = (message: string) => {
-  setCookie(
+  localStorage.setItem(
     "OOC_name",
     (<HTMLInputElement>document.getElementById("OOC_name")).value,
   );
