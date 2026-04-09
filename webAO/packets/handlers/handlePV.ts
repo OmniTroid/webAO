@@ -60,10 +60,10 @@ export const handlePV = async (args: string[]) => {
         let esfx;
         let esfxd;
         try {
-          esfx = ini.soundn[i] || "0";
-          esfxd = Number(ini.soundt[i]) || 0;
+          esfx = ini.soundn?.[i] || "0";
+          esfxd = ini.soundt?.[i] ? Number(ini.soundt[i]) : 0;
         } catch (e) {
-          console.warn("ini sound is completly missing");
+          console.warn(`ini sound is completly missing: ${e}`);
           esfx = "0";
           esfxd = 0;
         }
