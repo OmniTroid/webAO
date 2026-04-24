@@ -41,6 +41,12 @@ import { handleSP } from "./handlers/handleSP";
 import { handleJD } from "./handlers/handleJD";
 import { handlePU } from "./handlers/handlePU";
 import { handlePR } from "./handlers/handlePR";
+import { handleVC_CAPS } from "./handlers/handleVC_CAPS";
+import { handleVC_JOIN } from "./handlers/handleVC_JOIN";
+import { handleVC_LEAVE } from "./handlers/handleVC_LEAVE";
+import { handleVC_PEERS } from "./handlers/handleVC_PEERS";
+import { handleVC_SIG } from "./handlers/handleVC_SIG";
+import { handleVC_SPEAK } from "./handlers/handleVC_SPEAK";
 
 export const packets = {
   MS: handleMS,
@@ -86,6 +92,12 @@ export const packets = {
   JD: handleJD,
   PU: handlePU,
   PR: handlePR,
+  VC_CAPS: handleVC_CAPS,
+  VC_JOIN: handleVC_JOIN,
+  VC_LEAVE: handleVC_LEAVE,
+  VC_PEERS: handleVC_PEERS,
+  VC_SIG: handleVC_SIG,
+  VC_SPEAK: handleVC_SPEAK,
   decryptor: () => {},
   CHECK: () => {},
   CH: () => {},
