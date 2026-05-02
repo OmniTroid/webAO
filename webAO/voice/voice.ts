@@ -492,3 +492,7 @@ async function probeIceServer(
     }
   });
 }
+
+if (typeof window !== "undefined") {
+  (window as any).checkVoiceConfig = checkVoiceConfig;
+}
