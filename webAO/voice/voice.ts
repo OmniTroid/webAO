@@ -12,6 +12,7 @@ interface VoiceCaps {
   pttOnly: boolean;
   maxPeers: number;
   iceServers: IceServerEntry[];
+  forceRelay: boolean;
 }
 
 interface SignalMessage {
@@ -24,6 +25,7 @@ let caps: VoiceCaps = {
   pttOnly: true,
   maxPeers: 0,
   iceServers: [],
+  forceRelay: true,
 };
 
 let localStream: MediaStream | null = null;
@@ -117,7 +119,10 @@ function detachRemoteTrack(uid: number) {
 }
 
 function buildPeerConnection(remoteUid: number): RTCPeerConnection {
-  const pc = new RTCPeerConnection({ iceServers: caps.iceServers as RTCIceServer[] });
+  const pc = new RTCPeerConnection({
+    iceServers: caps.iceServers as RTCIceServer[],
+    iceTransportPolicy: caps.forceRelay ? "relay" : "all",
+  });
 
   pc.onicecandidate = (ev) => {
     if (ev.candidate) {
@@ -223,6 +228,7 @@ export function applyVoiceCaps(
   pttOnly: boolean,
   maxPeers: number,
   iceJson: string,
+  forceRelay = true,
 ) {
   let iceServers: IceServerEntry[] = [];
   if (iceJson) {
@@ -233,9 +239,9 @@ export function applyVoiceCaps(
       console.warn("Failed to parse VC_CAPS ice_json", e);
     }
   }
-  caps = { enabled, pttOnly, maxPeers, iceServers };
+  caps = { enabled, pttOnly, maxPeers, iceServers, forceRelay };
   console.debug(
-    `voice: caps applied enabled=${enabled} ptt=${pttOnly} maxPeers=${maxPeers} ice=${iceServers.length}`,
+    `voice: caps applied enabled=${enabled} ptt=${pttOnly} maxPeers=${maxPeers} ice=${iceServers.length} relay=${forceRelay}`,
   );
   if (!enabled && inVoice) {
     teardownAll();
@@ -367,4 +373,122 @@ function resolveDisplayName(uid: number): string {
     }
   }
   return `Peer ${uid}`;
+}
+
+export interface IceServerCheckResult {
+  url: string;
+  ok: boolean;
+  error?: string;
+}
+
+export interface VoiceConfigReport {
+  voiceEnabled: boolean;
+  pttOnly: boolean;
+  maxPeers: number;
+  forceRelay: boolean;
+  iceServers: IceServerCheckResult[];
+  webrtcSupported: boolean;
+  getUserMediaSupported: boolean;
+}
+
+export async function checkVoiceConfig(timeoutMs = 5000): Promise<VoiceConfigReport> {
+  const webrtcSupported = typeof RTCPeerConnection !== "undefined";
+  const getUserMediaSupported =
+    typeof navigator !== "undefined" &&
+    typeof navigator.mediaDevices !== "undefined" &&
+    typeof navigator.mediaDevices.getUserMedia === "function";
+
+  const iceResults: IceServerCheckResult[] = [];
+
+  for (const server of caps.iceServers) {
+    const urls = Array.isArray(server.urls) ? server.urls : [server.urls];
+    for (const url of urls) {
+      const result = await probeIceServer({ urls: url, username: server.username, credential: server.credential }, timeoutMs);
+      iceResults.push(result);
+    }
+  }
+
+  const report: VoiceConfigReport = {
+    voiceEnabled: caps.enabled,
+    pttOnly: caps.pttOnly,
+    maxPeers: caps.maxPeers,
+    forceRelay: caps.forceRelay,
+    iceServers: iceResults,
+    webrtcSupported,
+    getUserMediaSupported,
+  };
+
+  console.group("[webAO] Voice config check");
+  console.log("Voice enabled:", report.voiceEnabled);
+  console.log("PTT only:", report.pttOnly);
+  console.log("Max peers:", report.maxPeers);
+  console.log("Force relay (IP leak prevention):", report.forceRelay);
+  console.log("WebRTC supported:", report.webrtcSupported);
+  console.log("getUserMedia supported:", report.getUserMediaSupported);
+  if (iceResults.length === 0) {
+    console.warn("No ICE servers configured.");
+  } else {
+    for (const r of iceResults) {
+      if (r.ok) {
+        console.log(`  [OK]   ${r.url}`);
+      } else {
+        console.warn(`  [FAIL] ${r.url} — ${r.error}`);
+      }
+    }
+  }
+  console.groupEnd();
+
+  return report;
+}
+
+async function probeIceServer(
+  server: RTCIceServer,
+  timeoutMs: number,
+): Promise<IceServerCheckResult> {
+  const url = Array.isArray(server.urls) ? server.urls[0] : server.urls;
+  return new Promise((resolve) => {
+    let done = false;
+    let pc: RTCPeerConnection | null = null;
+    const finish = (ok: boolean, error?: string) => {
+      if (done) return;
+      done = true;
+      try { pc?.close(); } catch (_) { /* ignore */ }
+      resolve({ url, ok, error });
+    };
+
+    const timer = setTimeout(() => finish(false, "timeout"), timeoutMs);
+
+    try {
+      pc = new RTCPeerConnection({ iceServers: [server], iceTransportPolicy: "all" });
+      pc.createDataChannel("probe");
+      pc.createOffer()
+        .then((offer) => pc!.setLocalDescription(offer))
+        .catch((e) => finish(false, String(e)));
+
+      pc.onicegatheringstatechange = () => {
+        if (pc?.iceGatheringState === "complete") {
+          clearTimeout(timer);
+          finish(true);
+        }
+      };
+
+      pc.onicecandidate = (ev) => {
+        if (ev.candidate === null) {
+          clearTimeout(timer);
+          finish(true);
+        }
+      };
+
+      pc.onicecandidateerror = (ev) => {
+        const e = ev as RTCPeerConnectionIceErrorEvent;
+        if (e.errorCode >= 700) {
+          clearTimeout(timer);
+          finish(false, `ICE error ${e.errorCode}: ${e.errorText}`);
+        }
+      };
+    } catch (e) {
+      clearTimeout(timer);
+      finish(false, String(e));
+    }
+  });
 }
