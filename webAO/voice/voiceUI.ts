@@ -5,6 +5,7 @@ import {
   joinVoice,
   leaveVoice,
   setPTT,
+  onCapsChange,
   onSpeakingChange,
   getSpeakingLabels,
 } from "./voice";
@@ -92,6 +93,10 @@ function onKeyUp(e: KeyboardEvent) {
 
 export function installVoiceUI(): void {
   if (installed) return;
+  if (typeof document === "undefined" || !document.body) {
+    document.addEventListener("DOMContentLoaded", installVoiceUI, { once: true });
+    return;
+  }
   installed = true;
 
   panel = document.createElement("div");
@@ -135,10 +140,19 @@ export function installVoiceUI(): void {
 
   document.body.appendChild(panel);
 
+  onCapsChange(render);
   window.addEventListener("voice-caps-updated", render);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   onSpeakingChange(render);
 
   render();
+}
+
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", installVoiceUI, { once: true });
+  } else {
+    installVoiceUI();
+  }
 }

@@ -34,13 +34,31 @@ const peers = new Map<number, RTCPeerConnection>();
 const remoteAudio = new Map<number, HTMLAudioElement>();
 const speakingPeers = new Map<number, string>();
 const speakingListeners: Array<() => void> = [];
+const capsListeners: Array<() => void> = [];
 
 function notifyCapsUpdated() {
+  for (let i = 0; i < capsListeners.length; i++) {
+    try {
+      capsListeners[i]();
+    } catch (e) {
+      console.error(e);
+    }
+  }
   try {
-    window.dispatchEvent(new CustomEvent("voice-caps-updated"));
+    if (typeof window !== "undefined" && typeof CustomEvent === "function") {
+      window.dispatchEvent(new CustomEvent("voice-caps-updated"));
+    }
   } catch (_e) {
     // CustomEvent may be unavailable in unusual environments
   }
+}
+
+export function onCapsChange(listener: () => void): () => void {
+  capsListeners.push(listener);
+  return () => {
+    const idx = capsListeners.indexOf(listener);
+    if (idx >= 0) capsListeners.splice(idx, 1);
+  };
 }
 
 function notifySpeakingListeners() {
@@ -216,6 +234,9 @@ export function applyVoiceCaps(
     }
   }
   caps = { enabled, pttOnly, maxPeers, iceServers };
+  console.debug(
+    `voice: caps applied enabled=${enabled} ptt=${pttOnly} maxPeers=${maxPeers} ice=${iceServers.length}`,
+  );
   if (!enabled && inVoice) {
     teardownAll();
   }
