@@ -42,6 +42,7 @@ const remoteAudio = new Map<number, HTMLAudioElement>();
 const speakingPeers = new Map<number, string>();
 const speakingListeners: Array<() => void> = [];
 const capsListeners: Array<() => void> = [];
+const pendingCandidates = new Map<number, RTCIceCandidateInit[]>();
 
 function notifyCapsUpdated() {
   for (let i = 0; i < capsListeners.length; i++) {
@@ -141,10 +142,19 @@ function buildPeerConnection(remoteUid: number): RTCPeerConnection {
     attachRemoteTrack(remoteUid, stream);
   };
 
-  pc.onconnectionstatechange = () => {
-    const state = pc.connectionState;
-    if (state === "failed" || state === "closed" || state === "disconnected") {
-      // Leave audio element attached briefly; final cleanup happens on VC_LEAVE.
+  pc.oniceconnectionstatechange = () => {
+    if (pc.iceConnectionState === "failed") {
+      // If we were the offerer, restart ICE to recover the connection.
+      if (pc.localDescription && pc.localDescription.type === "offer") {
+        pc.createOffer({ iceRestart: true })
+          .then((offer) => pc.setLocalDescription(offer))
+          .then(() => {
+            if (pc.localDescription) {
+              sendSignal(remoteUid, { kind: "offer", data: pc.localDescription });
+            }
+          })
+          .catch((e) => console.warn(`ICE restart failed for peer ${remoteUid}`, e));
+      }
     }
   };
 
@@ -275,6 +285,7 @@ function teardownPeer(uid: number) {
     }
     peers.delete(uid);
   }
+  pendingCandidates.delete(uid);
   detachRemoteTrack(uid);
   if (speakingPeers.delete(uid)) {
     notifySpeakingListeners();
@@ -419,6 +430,19 @@ export async function handleInitialPeers(uids: number[]): Promise<void> {
   }
 }
 
+async function flushPendingCandidates(uid: number, pc: RTCPeerConnection): Promise<void> {
+  const pending = pendingCandidates.get(uid);
+  if (!pending || pending.length === 0) return;
+  pendingCandidates.delete(uid);
+  for (const cand of pending) {
+    try {
+      await pc.addIceCandidate(cand);
+    } catch (_e) {
+      // ignore stale candidates
+    }
+  }
+}
+
 export async function handleRemoteSignal(fromUid: number, b64: string): Promise<void> {
   if (!inVoice) return;
   const msg = decodeSignal(b64);
@@ -427,16 +451,24 @@ export async function handleRemoteSignal(fromUid: number, b64: string): Promise<
   try {
     if (msg.kind === "offer") {
       await pc.setRemoteDescription(msg.data);
+      await flushPendingCandidates(fromUid, pc);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       sendSignal(fromUid, { kind: "answer", data: answer });
     } else if (msg.kind === "answer") {
       await pc.setRemoteDescription(msg.data);
+      await flushPendingCandidates(fromUid, pc);
     } else if (msg.kind === "ice") {
-      try {
-        await pc.addIceCandidate(msg.data);
-      } catch (e) {
-        console.warn("Failed to add ICE candidate", e);
+      if (pc.remoteDescription) {
+        try {
+          await pc.addIceCandidate(msg.data);
+        } catch (e) {
+          console.warn("Failed to add ICE candidate", e);
+        }
+      } else {
+        // Buffer until remote description is set
+        if (!pendingCandidates.has(fromUid)) pendingCandidates.set(fromUid, []);
+        pendingCandidates.get(fromUid)!.push(msg.data);
       }
     }
   } catch (e) {

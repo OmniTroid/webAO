@@ -26,6 +26,7 @@ import getCookie from "../utils/getCookie";
 import setCookie from "../utils/setCookie";
 
 let installed = false;
+let speakingOverlay: HTMLElement | null = null;
 let menuButton: HTMLElement | null = null;
 let menuIcon: HTMLElement | null = null;
 let menuText: HTMLElement | null = null;
@@ -145,6 +146,7 @@ function render() {
   }
 
   updatePlayerListSpeaking();
+  updateSpeakingOverlay();
 }
 
 function updatePlayerListSpeaking() {
@@ -171,6 +173,36 @@ function updatePlayerListSpeaking() {
       }
     }
   });
+}
+
+function updateSpeakingOverlay() {
+  if (!speakingOverlay) {
+    speakingOverlay = document.getElementById("voice_speaking_overlay");
+  }
+  if (!speakingOverlay) return;
+
+  const names: string[] = [];
+  if (isLocalSpeaking()) names.push("You");
+  for (const label of getSpeakingLabels()) names.push(label);
+
+  if (names.length === 0) {
+    speakingOverlay.style.display = "none";
+    return;
+  }
+
+  speakingOverlay.style.display = "flex";
+  speakingOverlay.innerHTML = "";
+  for (const name of names) {
+    const chip = document.createElement("div");
+    chip.className = "vc-speaking-chip";
+    const dot = document.createElement("span");
+    dot.className = "vc-speaking-dot";
+    const label = document.createElement("span");
+    label.textContent = name;
+    chip.appendChild(dot);
+    chip.appendChild(label);
+    speakingOverlay.appendChild(chip);
+  }
 }
 
 async function populateDeviceList(): Promise<void> {
