@@ -31,6 +31,7 @@ let caps: VoiceCaps = {
 let localStream: MediaStream | null = null;
 let inVoice = false;
 let pttActive = false;
+let localOpenMic = false;
 let currentDeviceId: string | null = null;
 let outputVolume = 1;
 
@@ -164,7 +165,7 @@ function getOrCreatePeer(remoteUid: number): RTCPeerConnection {
 
 function applyPTTToTracks() {
   if (!localStream) return;
-  const enable = caps.pttOnly ? pttActive : true;
+  const enable = localOpenMic || (caps.pttOnly ? pttActive : true);
   const tracks = localStream.getAudioTracks();
   for (let i = 0; i < tracks.length; i++) {
     tracks[i].enabled = enable;
@@ -352,6 +353,7 @@ export function setPTT(active: boolean): void {
   pttActive = active;
   applyPTTToTracks();
   sender.sendServer(`VC_SPEAK#${client.playerID}#${active ? 1 : 0}#%`);
+  notifySpeakingListeners();
 }
 
 export function handlePeerJoined(uid: number): void {
@@ -429,6 +431,35 @@ export function getSpeakingLabels(): string[] {
   const labels: string[] = [];
   speakingPeers.forEach((label) => labels.push(label));
   return labels;
+}
+
+export function getSpeakingUids(): number[] {
+  const uids: number[] = [];
+  speakingPeers.forEach((_label, uid) => uids.push(uid));
+  return uids;
+}
+
+export function isLocalSpeaking(): boolean {
+  if (!inVoice) return false;
+  return localOpenMic || (caps.pttOnly ? pttActive : true);
+}
+
+export function getLocalPlayerID(): number {
+  return client ? client.playerID : -1;
+}
+
+export function isLocalOpenMic(): boolean {
+  return localOpenMic;
+}
+
+export function setLocalOpenMic(enabled: boolean): void {
+  if (localOpenMic === enabled) return;
+  localOpenMic = enabled;
+  applyPTTToTracks();
+  if (inVoice) {
+    sender.sendServer(`VC_SPEAK#${client.playerID}#${enabled ? 1 : 0}#%`);
+    notifySpeakingListeners();
+  }
 }
 
 function resolveDisplayName(uid: number): string {

@@ -1,5 +1,11 @@
 import { client } from "../client";
 import { AO_HOST } from "../client/aoHost";
+import {
+  getSpeakingUids,
+  isLocalSpeaking,
+  getLocalPlayerID,
+  isVoiceAvailable,
+} from "../voice/voice";
 
 export function renderPlayerList() {
   const list = document.getElementById("client_playerlist") as HTMLTableElement;
@@ -12,14 +18,26 @@ export function renderPlayerList() {
     header.appendChild(th);
   }
 
+  const voiceActive = isVoiceAvailable();
+  const speakingSet = voiceActive ? new Set(getSpeakingUids()) : new Set<number>();
+  const localUID = voiceActive ? getLocalPlayerID() : -1;
+  const localTalking = voiceActive && isLocalSpeaking();
+
   const body = list.createTBody();
   for (const [playerID, player] of client.playerlist) {
     const playerRow = body.insertRow();
     playerRow.id = `client_playerlist_entry${playerID}`;
     playerRow.style.display = player.area === client.area ? "" : "none";
 
+    const isSpeaking =
+      voiceActive &&
+      ((playerID === localUID && localTalking) || speakingSet.has(playerID));
+
     const imgCell = playerRow.insertCell(0);
     imgCell.style.width = "64px";
+    if (isSpeaking) {
+      imgCell.classList.add("voice-speaking-cell");
+    }
     const img = document.createElement("img");
     img.style.maxWidth = "60px";
     img.style.maxHeight = "60px";

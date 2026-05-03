@@ -8,6 +8,11 @@ import {
   onCapsChange,
   onSpeakingChange,
   getSpeakingLabels,
+  getSpeakingUids,
+  isLocalSpeaking,
+  isLocalOpenMic,
+  setLocalOpenMic,
+  getLocalPlayerID,
   setInputDevice,
   getInputDeviceId,
   setOutputVolume,
@@ -26,6 +31,11 @@ let settingsStatusLine: HTMLElement | null = null;
 let settingsSpeakingList: HTMLElement | null = null;
 let deviceSelect: HTMLSelectElement | null = null;
 let outputVolumeSlider: HTMLInputElement | null = null;
+let pttControls: HTMLElement | null = null;
+let tapButton: HTMLButtonElement | null = null;
+let openMicRow: HTMLElement | null = null;
+let openMicCheck: HTMLInputElement | null = null;
+let tapActive = false;
 let toggleInFlight = false;
 let deviceListPopulated = false;
 
@@ -43,6 +53,9 @@ function render() {
   if (menuButton) {
     menuButton.style.display = available ? "" : "none";
   }
+  if (openMicRow) {
+    openMicRow.style.display = available ? "" : "none";
+  }
   if (settingsFieldset) {
     settingsFieldset.style.display = available ? "" : "none";
   }
@@ -51,6 +64,11 @@ function render() {
 
   const joined = isInVoice();
   const ptt = isPTTOnly();
+  const openMic = isLocalOpenMic();
+
+  if (openMicCheck) {
+    openMicCheck.checked = openMic;
+  }
 
   if (menuIcon) {
     menuIcon.innerHTML = joined ? "&#127908;" : "&#128264;";
@@ -64,7 +82,7 @@ function render() {
       "title",
       joined
         ? ptt
-          ? "Voice on — hold V to talk. Click to mute."
+          ? "Voice on — hold V or tap Tap to Talk. Click to mute."
           : "Voice on (open mic). Click to mute."
         : "Click to enable voice chat",
     );
@@ -76,12 +94,28 @@ function render() {
   if (settingsStatusLine) {
     if (joined) {
       settingsStatusLine.textContent = ptt
-        ? "Connected — hold V to talk"
+        ? "Connected — use Tap to Talk or hold V"
         : "Connected — open mic";
     } else {
       settingsStatusLine.textContent = ptt
-        ? "Push-to-talk (V) when enabled"
+        ? "Push-to-talk mode when enabled"
         : "Open mic when enabled";
+    }
+  }
+
+  // Show tap-to-talk when in voice, server requires PTT, and open mic override is off
+  if (pttControls) {
+    pttControls.style.display = joined && ptt && !openMic ? "" : "none";
+  }
+  if (tapButton) {
+    if (tapActive) {
+      tapButton.textContent = "🔴 Stop Talking";
+      tapButton.style.background = "#8b2020";
+      tapButton.style.color = "#fff";
+    } else {
+      tapButton.textContent = "🎙️ Tap to Talk";
+      tapButton.style.background = "";
+      tapButton.style.color = "";
     }
   }
 
@@ -92,6 +126,34 @@ function render() {
         ? "🔊 Speaking: (nobody)"
         : `🔊 Speaking: ${labels.join(", ")}`;
   }
+
+  updatePlayerListSpeaking();
+}
+
+function updatePlayerListSpeaking() {
+  const speakingUids = new Set(getSpeakingUids());
+  const localUID = getLocalPlayerID();
+  const localTalking = isLocalSpeaking();
+
+  // Update all visible player rows
+  const rows = document.querySelectorAll<HTMLTableRowElement>(
+    "#client_playerlist tbody tr",
+  );
+  rows.forEach((row) => {
+    const match = row.id.match(/client_playerlist_entry(\d+)/);
+    if (!match) return;
+    const uid = parseInt(match[1], 10);
+    const isSpeaking =
+      (uid === localUID && localTalking) || speakingUids.has(uid);
+    const imgCell = row.cells[0];
+    if (imgCell) {
+      if (isSpeaking) {
+        imgCell.classList.add("voice-speaking-cell");
+      } else {
+        imgCell.classList.remove("voice-speaking-cell");
+      }
+    }
+  });
 }
 
 async function populateDeviceList(): Promise<void> {
@@ -131,11 +193,23 @@ async function populateDeviceList(): Promise<void> {
   }
 }
 
+function onTapButtonClick() {
+  if (!isInVoice()) return;
+  tapActive = !tapActive;
+  setPTT(tapActive);
+  render();
+}
+
 export async function toggleVoice(): Promise<void> {
   if (!isVoiceAvailable() || toggleInFlight) return;
   toggleInFlight = true;
   try {
     if (isInVoice()) {
+      // Reset tap state before leaving
+      if (tapActive) {
+        tapActive = false;
+        setPTT(false);
+      }
       leaveVoice();
     } else {
       await joinVoice();
@@ -211,6 +285,14 @@ export function installVoiceUI(): void {
   ) as HTMLButtonElement | null;
   settingsStatusLine = document.getElementById("voice_status_line");
   settingsSpeakingList = document.getElementById("voice_speaking_list");
+  pttControls = document.getElementById("voice_ptt_controls");
+  tapButton = document.getElementById(
+    "voice_tap_button",
+  ) as HTMLButtonElement | null;
+  openMicRow = document.getElementById("menu_voice_openmic_row");
+  openMicCheck = document.getElementById(
+    "voice_openmic_check",
+  ) as HTMLInputElement | null;
   deviceSelect = document.getElementById(
     "voice_input_device",
   ) as HTMLSelectElement | null;
@@ -221,6 +303,21 @@ export function installVoiceUI(): void {
   if (settingsToggleButton) {
     settingsToggleButton.addEventListener("click", () => {
       void toggleVoice();
+    });
+  }
+  if (tapButton) {
+    tapButton.addEventListener("click", onTapButtonClick);
+  }
+  if (openMicCheck) {
+    const savedOpenMic = getCookie("voiceOpenMic") === "1";
+    if (savedOpenMic) {
+      setLocalOpenMic(true);
+    }
+    openMicCheck.addEventListener("change", () => {
+      const enabled = openMicCheck!.checked;
+      setLocalOpenMic(enabled);
+      setCookie("voiceOpenMic", enabled ? "1" : "0");
+      render();
     });
   }
   if (deviceSelect) {

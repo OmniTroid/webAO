@@ -628,6 +628,16 @@
           <b class="menu_icon" id="menu_voice_icon">&#128264;</b>
           <div class="menu_text" id="menu_voice_text">Voice</div>
         </span>
+        <div
+          id="menu_voice_openmic_row"
+          style="display: none; text-align: center; font-size: 11px; margin: -6px 15px 4px; white-space: nowrap"
+          title="Always transmit when connected — no need to hold V or press Tap to Talk. Useful for mobile users."
+        >
+          <label style="cursor: pointer">
+            <input type="checkbox" id="voice_openmic_check" style="cursor: pointer" />
+            Always transmit (no PTT)
+          </label>
+        </div>
       </div>
       <div class="hrtext">
         <span id="content_name">Content</span>
@@ -862,6 +872,24 @@
           </button>
           <br />
           <br />
+          <span id="voice_ptt_controls" style="display: none">
+            <button
+              type="button"
+              id="voice_tap_button"
+              class="client_button hover_button"
+              style="min-width: 140px"
+            >
+              &#127908; Tap to Talk
+            </button>
+            <span
+              id="voice_ptt_hint"
+              style="font-size: 11px; opacity: 0.7; margin-left: 6px"
+            >
+              or hold V
+            </span>
+            <br />
+            <br />
+          </span>
           <label for="voice_input_device">Microphone:</label>
           <select id="voice_input_device" name="voice_input_device">
             <option value="">Default</option>
