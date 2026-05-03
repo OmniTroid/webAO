@@ -3,6 +3,8 @@ import {
   isPTTOnly,
   isInVoice,
   joinVoice,
+  joinVoiceListenOnly,
+  isListenOnly,
   leaveVoice,
   setPTT,
   onCapsChange,
@@ -17,6 +19,8 @@ import {
   getInputDeviceId,
   setOutputVolume,
   getOutputVolume,
+  isVCMuted,
+  setVCMuted,
 } from "./voice";
 import getCookie from "../utils/getCookie";
 import setCookie from "../utils/setCookie";
@@ -35,6 +39,7 @@ let pttControls: HTMLElement | null = null;
 let tapButton: HTMLButtonElement | null = null;
 let openMicRow: HTMLElement | null = null;
 let openMicCheck: HTMLInputElement | null = null;
+let vcMuteButton: HTMLButtonElement | null = null;
 let tapActive = false;
 let toggleInFlight = false;
 let deviceListPopulated = false;
@@ -63,49 +68,61 @@ function render() {
   if (!available) return;
 
   const joined = isInVoice();
+  const listenOnlyMode = isListenOnly();
+  const micActive = joined && !listenOnlyMode;
   const ptt = isPTTOnly();
   const openMic = isLocalOpenMic();
+  const muted = isVCMuted();
 
   if (openMicCheck) {
     openMicCheck.checked = openMic;
   }
 
   if (menuIcon) {
-    menuIcon.innerHTML = joined ? "&#127908;" : "&#128264;";
+    menuIcon.innerHTML = micActive ? "&#127908;" : "&#128266;";
   }
   if (menuText) {
-    menuText.textContent = joined ? "Mute" : "Voice";
-    (menuText as HTMLElement).style.color = joined ? "#5cb85c" : "";
+    menuText.textContent = micActive ? "Mic On" : "Voice";
+    (menuText as HTMLElement).style.color = micActive ? "#5cb85c" : "";
   }
   if (menuButton) {
     menuButton.setAttribute(
       "title",
-      joined
+      micActive
         ? ptt
-          ? "Voice on — hold V or tap Tap to Talk. Click to mute."
-          : "Voice on (open mic). Click to mute."
-        : "Click to enable voice chat",
+          ? "Mic on — hold V or tap Tap to Talk. Click to disconnect mic."
+          : "Mic on (open mic). Click to disconnect mic."
+        : "Click to enable microphone for voice chat",
     );
   }
 
+  if (vcMuteButton) {
+    vcMuteButton.textContent = muted ? "&#128263; Unmute VC Audio" : "&#128264; Mute VC Audio";
+    vcMuteButton.innerHTML = muted ? "&#128263; Unmute VC Audio" : "&#128264; Mute VC Audio";
+    vcMuteButton.style.background = muted ? "#8b2020" : "";
+    vcMuteButton.style.color = muted ? "#fff" : "";
+  }
+
   if (settingsToggleButton) {
-    settingsToggleButton.textContent = joined ? "Mute / Disconnect" : "Enable Voice";
+    settingsToggleButton.textContent = micActive ? "Disconnect Microphone" : "Enable Microphone";
   }
   if (settingsStatusLine) {
-    if (joined) {
+    if (micActive) {
       settingsStatusLine.textContent = ptt
-        ? "Connected — use Tap to Talk or hold V"
-        : "Connected — open mic";
+        ? "Mic connected — use Tap to Talk or hold V"
+        : "Mic connected — open mic";
+    } else if (joined) {
+      settingsStatusLine.textContent = muted
+        ? "Listening (VC audio muted)"
+        : "Listening — enable microphone to talk";
     } else {
-      settingsStatusLine.textContent = ptt
-        ? "Push-to-talk mode when enabled"
-        : "Open mic when enabled";
+      settingsStatusLine.textContent = "Joining voice…";
     }
   }
 
-  // Show tap-to-talk when in voice, server requires PTT, and open mic override is off
+  // Show tap-to-talk when mic is on, server requires PTT, and open mic override is off
   if (pttControls) {
-    pttControls.style.display = joined && ptt && !openMic ? "" : "none";
+    pttControls.style.display = micActive && ptt && !openMic ? "" : "none";
   }
   if (tapButton) {
     if (tapActive) {
@@ -204,17 +221,21 @@ export async function toggleVoice(): Promise<void> {
   if (!isVoiceAvailable() || toggleInFlight) return;
   toggleInFlight = true;
   try {
-    if (isInVoice()) {
-      // Reset tap state before leaving
+    if (isInVoice() && !isListenOnly()) {
+      // Mic is on — disconnect mic, go back to listen-only
       if (tapActive) {
         tapActive = false;
         setPTT(false);
       }
       leaveVoice();
-    } else {
+      await joinVoiceListenOnly();
+    } else if (isListenOnly()) {
+      // Currently listen-only — upgrade to full voice (enable mic)
       await joinVoice();
-      // Once permission is granted device labels become available.
       await populateDeviceList();
+    } else {
+      // Not connected at all — join listen-only
+      await joinVoiceListenOnly();
     }
   } catch (e) {
     console.error("Voice toggle failed", e);
@@ -225,6 +246,13 @@ export async function toggleVoice(): Promise<void> {
     toggleInFlight = false;
     render();
   }
+}
+
+function onVCMuteClick() {
+  const muted = !isVCMuted();
+  setVCMuted(muted);
+  setCookie("vcMuted", muted ? "1" : "0");
+  render();
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -299,6 +327,17 @@ export function installVoiceUI(): void {
   outputVolumeSlider = document.getElementById(
     "voice_output_volume",
   ) as HTMLInputElement | null;
+  vcMuteButton = document.getElementById(
+    "voice_mute_button",
+  ) as HTMLButtonElement | null;
+
+  if (vcMuteButton) {
+    const savedMuted = getCookie("vcMuted") === "1";
+    if (savedMuted) {
+      setVCMuted(true);
+    }
+    vcMuteButton.addEventListener("click", onVCMuteClick);
+  }
 
   if (settingsToggleButton) {
     settingsToggleButton.addEventListener("click", () => {
@@ -349,8 +388,15 @@ export function installVoiceUI(): void {
     });
   }
 
-  onCapsChange(render);
-  window.addEventListener("voice-caps-updated", render);
+  function onCapsUpdated() {
+    if (isVoiceAvailable() && !isInVoice()) {
+      void joinVoiceListenOnly();
+    }
+    render();
+  }
+
+  onCapsChange(onCapsUpdated);
+  window.addEventListener("voice-caps-updated", onCapsUpdated);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
   onSpeakingChange(render);

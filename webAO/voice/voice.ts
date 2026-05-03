@@ -30,6 +30,8 @@ let caps: VoiceCaps = {
 
 let localStream: MediaStream | null = null;
 let inVoice = false;
+let listenOnly = false;
+let vcMuted = false;
 let pttActive = false;
 let localOpenMic = false;
 let currentDeviceId: string | null = null;
@@ -104,7 +106,7 @@ function attachRemoteTrack(uid: number, stream: MediaStream) {
     remoteAudio.set(uid, audio);
   }
   audio.srcObject = stream;
-  audio.volume = outputVolume;
+  audio.volume = vcMuted ? 0 : outputVolume;
   const playPromise = audio.play();
   if (playPromise && typeof (playPromise as any).catch === "function") {
     (playPromise as Promise<void>).catch(() => {
@@ -240,8 +242,22 @@ export function getInputDeviceId(): string | null {
 export function setOutputVolume(volume: number): void {
   const clamped = Math.max(0, Math.min(1, volume));
   outputVolume = clamped;
+  if (!vcMuted) {
+    remoteAudio.forEach((audio) => {
+      audio.volume = clamped;
+    });
+  }
+}
+
+export function isVCMuted(): boolean {
+  return vcMuted;
+}
+
+export function setVCMuted(muted: boolean): void {
+  vcMuted = muted;
+  const vol = muted ? 0 : outputVolume;
   remoteAudio.forEach((audio) => {
-    audio.volume = clamped;
+    audio.volume = vol;
   });
 }
 
@@ -283,6 +299,7 @@ function teardownAll() {
     localStream = null;
   }
   inVoice = false;
+  listenOnly = false;
   pttActive = false;
   if (speakingPeers.size > 0) {
     speakingPeers.clear();
@@ -328,8 +345,27 @@ export function isInVoice(): boolean {
   return inVoice;
 }
 
-export async function joinVoice(): Promise<void> {
+export async function joinVoiceListenOnly(): Promise<void> {
   if (!caps.enabled || inVoice) return;
+  inVoice = true;
+  listenOnly = true;
+  sender.sendServer(`VC_JOIN#${client.playerID}#%`);
+}
+
+export function isListenOnly(): boolean {
+  return listenOnly;
+}
+
+export async function joinVoice(): Promise<void> {
+  if (!caps.enabled) return;
+  if (inVoice && !listenOnly) return;
+
+  if (listenOnly) {
+    // Leave listen-only first so we can rejoin with mic
+    sender.sendServer(`VC_LEAVE#${client.playerID}#%`);
+    teardownAll();
+  }
+
   try {
     await ensureLocalStream();
   } catch (e) {
@@ -337,6 +373,7 @@ export async function joinVoice(): Promise<void> {
     throw e;
   }
   inVoice = true;
+  listenOnly = false;
   sender.sendServer(`VC_JOIN#${client.playerID}#%`);
 }
 
