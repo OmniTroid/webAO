@@ -393,9 +393,21 @@ export function setPTT(active: boolean): void {
   notifySpeakingListeners();
 }
 
-export function handlePeerJoined(uid: number): void {
+export async function handlePeerJoined(uid: number): Promise<void> {
   if (!inVoice || uid === client.playerID) return;
-  getOrCreatePeer(uid);
+  const pc = getOrCreatePeer(uid);
+  // Always initiate an offer to the new joiner. This is necessary because the
+  // new joiner's handleInitialPeers may have skipped us due to their maxPeers
+  // cap, leaving no one to initiate SDP negotiation. Glare (both sides offering
+  // simultaneously) is resolved in handleRemoteSignal via perfect negotiation.
+  if (pc.signalingState !== "stable" || pc.connectionState === "connected") return;
+  try {
+    const offer = await pc.createOffer({ offerToReceiveAudio: true });
+    await pc.setLocalDescription(offer);
+    sendSignal(uid, { kind: "offer", data: offer });
+  } catch (e) {
+    console.error(`Failed to create offer for new peer ${uid}`, e);
+  }
 }
 
 export function handlePeerLeft(uid: number): void {
@@ -426,6 +438,15 @@ export async function handleRemoteSignal(fromUid: number, b64: string): Promise<
   const pc = getOrCreatePeer(fromUid);
   try {
     if (msg.kind === "offer") {
+      // Perfect negotiation: resolve glare (both sides offered simultaneously)
+      // by using UID as a tiebreaker. The peer with the lower UID is "polite"
+      // and yields by rolling back its local offer; the higher-UID peer ignores
+      // the incoming offer and waits for the other side's answer.
+      if (pc.signalingState === "have-local-offer") {
+        const isPolite = client.playerID < fromUid;
+        if (!isPolite) return;
+        await pc.setLocalDescription({ type: "rollback" } as RTCSessionDescriptionInit);
+      }
       await pc.setRemoteDescription(msg.data);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
