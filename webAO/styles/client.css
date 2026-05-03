@@ -782,6 +782,22 @@
   border-bottom: 2px solid #888;
 }
 
+.voice-speaking-cell {
+  outline: 2px solid #5cb85c;
+  outline-offset: -2px;
+  border-radius: 4px;
+  position: relative;
+}
+
+.voice-speaking-cell::after {
+  content: "🔊";
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 10px;
+  line-height: 1;
+}
+
 .hrtext {
   overflow: hidden;
   text-align: center;

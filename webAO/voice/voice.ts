@@ -352,6 +352,7 @@ export function setPTT(active: boolean): void {
   pttActive = active;
   applyPTTToTracks();
   sender.sendServer(`VC_SPEAK#${client.playerID}#${active ? 1 : 0}#%`);
+  notifySpeakingListeners();
 }
 
 export function handlePeerJoined(uid: number): void {
@@ -429,6 +430,21 @@ export function getSpeakingLabels(): string[] {
   const labels: string[] = [];
   speakingPeers.forEach((label) => labels.push(label));
   return labels;
+}
+
+export function getSpeakingUids(): number[] {
+  const uids: number[] = [];
+  speakingPeers.forEach((_label, uid) => uids.push(uid));
+  return uids;
+}
+
+export function isLocalSpeaking(): boolean {
+  if (!inVoice) return false;
+  return caps.pttOnly ? pttActive : true;
+}
+
+export function getLocalPlayerID(): number {
+  return client ? client.playerID : -1;
 }
 
 function resolveDisplayName(uid: number): string {
