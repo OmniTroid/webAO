@@ -618,6 +618,16 @@
           <b class="menu_icon">&#128680;</b>
           <div class="menu_text" style="color: #ce2727">Call Mod</div>
         </span>
+        <span
+          id="menu_voice"
+          onclick="toggleVoice()"
+          class="menu_button"
+          style="display: none"
+          title="Toggle voice chat"
+        >
+          <b class="menu_icon" id="menu_voice_icon">&#128264;</b>
+          <div class="menu_text" id="menu_voice_text">Voice</div>
+        </span>
       </div>
       <div class="hrtext">
         <span id="content_name">Content</span>
@@ -839,6 +849,41 @@
           onchange="changeBlipVolume()"
         />
         <br />
+        <br />
+        <fieldset id="voice_settings" style="text-align: left; display: none">
+          <legend>&#127908; Voice Chat</legend>
+          <div id="voice_status_line" style="margin-bottom: 6px"></div>
+          <button
+            type="button"
+            id="voice_toggle_button"
+            class="client_button hover_button"
+          >
+            Enable Voice
+          </button>
+          <br />
+          <br />
+          <label for="voice_input_device">Microphone:</label>
+          <select id="voice_input_device" name="voice_input_device">
+            <option value="">Default</option>
+          </select>
+          <br />
+          <br />
+          <label for="voice_output_volume">Voice playback volume:</label>
+          <input
+            id="voice_output_volume"
+            type="range"
+            min="0"
+            max="1"
+            value="1"
+            step="0.01"
+          />
+          <br />
+          <br />
+          <div
+            id="voice_speaking_list"
+            style="font-size: 11px; opacity: 0.85"
+          ></div>
+        </fieldset>
         <br />
         <label for="client_themeselect">Menu theme:</label>
         <select
