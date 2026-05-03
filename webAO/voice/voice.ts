@@ -530,6 +530,10 @@ function resolveDisplayName(uid: number): string {
   return `Peer ${uid}`;
 }
 
+export function getSpeakerDisplayName(uid: number): string {
+  return resolveDisplayName(uid);
+}
+
 export interface IceServerCheckResult {
   url: string;
   ok: boolean;

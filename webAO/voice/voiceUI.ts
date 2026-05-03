@@ -15,6 +15,7 @@ import {
   isLocalOpenMic,
   setLocalOpenMic,
   getLocalPlayerID,
+  getSpeakerDisplayName,
   setInputDevice,
   getInputDeviceId,
   setOutputVolume,
@@ -40,6 +41,7 @@ let tapButton: HTMLButtonElement | null = null;
 let openMicRow: HTMLElement | null = null;
 let openMicCheck: HTMLInputElement | null = null;
 let vcMuteButton: HTMLButtonElement | null = null;
+let speakerOverlay: HTMLElement | null = null;
 let tapActive = false;
 let toggleInFlight = false;
 let deviceListPopulated = false;
@@ -145,6 +147,86 @@ function render() {
   }
 
   updatePlayerListSpeaking();
+  renderSpeakerOverlay();
+}
+
+function renderSpeakerOverlay() {
+  if (!speakerOverlay) return;
+
+  const localUID = getLocalPlayerID();
+  const localTalking = isLocalSpeaking();
+  const remoteUids = getSpeakingUids();
+
+  type Entry = { uid: number; label: string; isSelf: boolean };
+  const entries: Entry[] = [];
+  if (localTalking && localUID >= 0) {
+    entries.push({
+      uid: localUID,
+      label: getSpeakerDisplayName(localUID),
+      isSelf: true,
+    });
+  }
+  for (let i = 0; i < remoteUids.length; i++) {
+    const uid = remoteUids[i];
+    entries.push({
+      uid,
+      label: getSpeakerDisplayName(uid),
+      isSelf: false,
+    });
+  }
+
+  const desiredKeys = entries.map((e) => `${e.isSelf ? "s" : "r"}:${e.uid}`);
+  const existingKeys: string[] = [];
+  const children = speakerOverlay.children;
+  for (let i = 0; i < children.length; i++) {
+    const key = (children[i] as HTMLElement).dataset.key;
+    if (key) existingKeys.push(key);
+  }
+
+  let unchanged = desiredKeys.length === existingKeys.length;
+  if (unchanged) {
+    for (let i = 0; i < desiredKeys.length; i++) {
+      if (desiredKeys[i] !== existingKeys[i]) {
+        unchanged = false;
+        break;
+      }
+    }
+  }
+
+  if (unchanged) {
+    for (let i = 0; i < entries.length; i++) {
+      const nameEl = (children[i] as HTMLElement).querySelector<HTMLElement>(
+        ".voice-speaker-name",
+      );
+      if (nameEl && nameEl.textContent !== entries[i].label) {
+        nameEl.textContent = entries[i].label;
+      }
+    }
+    return;
+  }
+
+  while (speakerOverlay.firstChild) {
+    speakerOverlay.removeChild(speakerOverlay.firstChild);
+  }
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    const row = document.createElement("div");
+    row.className = "voice-speaker-entry";
+    if (entry.isSelf) row.classList.add("voice-speaker-self");
+    row.dataset.key = desiredKeys[i];
+
+    const icon = document.createElement("span");
+    icon.className = "voice-speaker-icon";
+    icon.setAttribute("aria-hidden", "true");
+
+    const name = document.createElement("span");
+    name.className = "voice-speaker-name";
+    name.textContent = entry.label;
+
+    row.appendChild(icon);
+    row.appendChild(name);
+    speakerOverlay.appendChild(row);
+  }
 }
 
 function updatePlayerListSpeaking() {
@@ -330,6 +412,7 @@ export function installVoiceUI(): void {
   vcMuteButton = document.getElementById(
     "voice_mute_button",
   ) as HTMLButtonElement | null;
+  speakerOverlay = document.getElementById("voice_speaker_overlay");
 
   if (vcMuteButton) {
     const savedMuted = getCookie("vcMuted") === "1";
