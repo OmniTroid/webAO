@@ -10,6 +10,8 @@ import {
   getSpeakingLabels,
   getSpeakingUids,
   isLocalSpeaking,
+  isLocalOpenMic,
+  setLocalOpenMic,
   getLocalPlayerID,
   setInputDevice,
   getInputDeviceId,
@@ -31,6 +33,8 @@ let deviceSelect: HTMLSelectElement | null = null;
 let outputVolumeSlider: HTMLInputElement | null = null;
 let pttControls: HTMLElement | null = null;
 let tapButton: HTMLButtonElement | null = null;
+let openMicRow: HTMLElement | null = null;
+let openMicCheck: HTMLInputElement | null = null;
 let tapActive = false;
 let toggleInFlight = false;
 let deviceListPopulated = false;
@@ -49,6 +53,9 @@ function render() {
   if (menuButton) {
     menuButton.style.display = available ? "" : "none";
   }
+  if (openMicRow) {
+    openMicRow.style.display = available ? "" : "none";
+  }
   if (settingsFieldset) {
     settingsFieldset.style.display = available ? "" : "none";
   }
@@ -57,6 +64,11 @@ function render() {
 
   const joined = isInVoice();
   const ptt = isPTTOnly();
+  const openMic = isLocalOpenMic();
+
+  if (openMicCheck) {
+    openMicCheck.checked = openMic;
+  }
 
   if (menuIcon) {
     menuIcon.innerHTML = joined ? "&#127908;" : "&#128264;";
@@ -91,9 +103,9 @@ function render() {
     }
   }
 
-  // Show tap-to-talk controls when in voice and server requires PTT
+  // Show tap-to-talk when in voice, server requires PTT, and open mic override is off
   if (pttControls) {
-    pttControls.style.display = joined && ptt ? "" : "none";
+    pttControls.style.display = joined && ptt && !openMic ? "" : "none";
   }
   if (tapButton) {
     if (tapActive) {
@@ -277,6 +289,10 @@ export function installVoiceUI(): void {
   tapButton = document.getElementById(
     "voice_tap_button",
   ) as HTMLButtonElement | null;
+  openMicRow = document.getElementById("menu_voice_openmic_row");
+  openMicCheck = document.getElementById(
+    "voice_openmic_check",
+  ) as HTMLInputElement | null;
   deviceSelect = document.getElementById(
     "voice_input_device",
   ) as HTMLSelectElement | null;
@@ -291,6 +307,18 @@ export function installVoiceUI(): void {
   }
   if (tapButton) {
     tapButton.addEventListener("click", onTapButtonClick);
+  }
+  if (openMicCheck) {
+    const savedOpenMic = getCookie("voiceOpenMic") === "1";
+    if (savedOpenMic) {
+      setLocalOpenMic(true);
+    }
+    openMicCheck.addEventListener("change", () => {
+      const enabled = openMicCheck!.checked;
+      setLocalOpenMic(enabled);
+      setCookie("voiceOpenMic", enabled ? "1" : "0");
+      render();
+    });
   }
   if (deviceSelect) {
     deviceSelect.addEventListener("change", () => {
