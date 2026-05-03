@@ -12,6 +12,7 @@ declare global {
     initCE: () => void;
     initWT: () => void;
     callMod: () => void;
+    toggleVoice: () => void;
     randomCharacterOOC: () => void;
     changeRoleOOC: () => void;
     changeBackgroundOOC: () => void;

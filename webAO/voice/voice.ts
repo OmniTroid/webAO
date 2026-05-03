@@ -31,6 +31,8 @@ let caps: VoiceCaps = {
 let localStream: MediaStream | null = null;
 let inVoice = false;
 let pttActive = false;
+let currentDeviceId: string | null = null;
+let outputVolume = 1;
 
 const peers = new Map<number, RTCPeerConnection>();
 const remoteAudio = new Map<number, HTMLAudioElement>();
@@ -101,6 +103,7 @@ function attachRemoteTrack(uid: number, stream: MediaStream) {
     remoteAudio.set(uid, audio);
   }
   audio.srcObject = stream;
+  audio.volume = outputVolume;
   const playPromise = audio.play();
   if (playPromise && typeof (playPromise as any).catch === "function") {
     (playPromise as Promise<void>).catch(() => {
@@ -168,18 +171,81 @@ function applyPTTToTracks() {
   }
 }
 
+function buildAudioConstraints(): MediaTrackConstraints {
+  const constraints: MediaTrackConstraints = {
+    echoCancellation: true,
+    noiseSuppression: true,
+    autoGainControl: true,
+  };
+  if (currentDeviceId) {
+    constraints.deviceId = { exact: currentDeviceId };
+  }
+  return constraints;
+}
+
 async function ensureLocalStream(): Promise<MediaStream> {
   if (localStream) return localStream;
   const stream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
+    audio: buildAudioConstraints(),
   });
   localStream = stream;
   applyPTTToTracks();
   return stream;
+}
+
+export async function setInputDevice(deviceId: string): Promise<void> {
+  const normalized = deviceId || null;
+  if (normalized === currentDeviceId) return;
+  currentDeviceId = normalized;
+  if (!localStream) return;
+  let newStream: MediaStream;
+  try {
+    newStream = await navigator.mediaDevices.getUserMedia({
+      audio: buildAudioConstraints(),
+    });
+  } catch (e) {
+    console.error("Failed to switch microphone", e);
+    throw e;
+  }
+  const newTrack = newStream.getAudioTracks()[0];
+  if (!newTrack) return;
+  peers.forEach((pc) => {
+    const senders = pc.getSenders();
+    for (let i = 0; i < senders.length; i++) {
+      const s = senders[i];
+      if (s.track && s.track.kind === "audio") {
+        s.replaceTrack(newTrack).catch((err) =>
+          console.warn("replaceTrack failed", err),
+        );
+      }
+    }
+  });
+  const oldTracks = localStream.getTracks();
+  for (let i = 0; i < oldTracks.length; i++) {
+    try {
+      oldTracks[i].stop();
+    } catch (_) {
+      // ignore
+    }
+  }
+  localStream = newStream;
+  applyPTTToTracks();
+}
+
+export function getInputDeviceId(): string | null {
+  return currentDeviceId;
+}
+
+export function setOutputVolume(volume: number): void {
+  const clamped = Math.max(0, Math.min(1, volume));
+  outputVolume = clamped;
+  remoteAudio.forEach((audio) => {
+    audio.volume = clamped;
+  });
+}
+
+export function getOutputVolume(): number {
+  return outputVolume;
 }
 
 function teardownPeer(uid: number) {
