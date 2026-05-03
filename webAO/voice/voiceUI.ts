@@ -337,21 +337,35 @@ function onVCMuteClick() {
   render();
 }
 
+let pttKeyEngaged = false;
+
+function releasePttFromKey() {
+  if (!pttKeyEngaged) return;
+  pttKeyEngaged = false;
+  setPTT(false);
+  render();
+}
+
 function onKeyDown(e: KeyboardEvent) {
   if (!isVoiceAvailable() || !isInVoice() || !isPTTOnly()) return;
   if (e.key !== "v" && e.key !== "V") return;
   if (isTypingTarget(e.target)) return;
   if (e.repeat) return;
+  pttKeyEngaged = true;
   setPTT(true);
   render();
 }
 
 function onKeyUp(e: KeyboardEvent) {
-  if (!isVoiceAvailable() || !isInVoice() || !isPTTOnly()) return;
   if (e.key !== "v" && e.key !== "V") return;
-  if (isTypingTarget(e.target)) return;
-  setPTT(false);
-  render();
+  // Always release if keydown engaged PTT, regardless of where focus is now —
+  // otherwise refocusing into a text input mid-press leaves the mic stuck on.
+  releasePttFromKey();
+}
+
+function onWindowBlur() {
+  // Window losing focus suppresses keyup, so force-release here.
+  releasePttFromKey();
 }
 
 async function onDeviceChange() {
@@ -482,6 +496,7 @@ export function installVoiceUI(): void {
   window.addEventListener("voice-caps-updated", onCapsUpdated);
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
+  window.addEventListener("blur", onWindowBlur);
   onSpeakingChange(render);
 
   render();

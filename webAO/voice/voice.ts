@@ -42,6 +42,8 @@ const remoteAudio = new Map<number, HTMLAudioElement>();
 const speakingPeers = new Map<number, string>();
 const speakingListeners: Array<() => void> = [];
 const capsListeners: Array<() => void> = [];
+const restartTimers = new Map<number, ReturnType<typeof setTimeout>>();
+const DISCONNECT_RESTART_DELAY_MS = 4000;
 
 function notifyCapsUpdated() {
   for (let i = 0; i < capsListeners.length; i++) {
@@ -143,8 +145,22 @@ function buildPeerConnection(remoteUid: number): RTCPeerConnection {
 
   pc.onconnectionstatechange = () => {
     const state = pc.connectionState;
-    if (state === "failed" || state === "closed" || state === "disconnected") {
-      // Leave audio element attached briefly; final cleanup happens on VC_LEAVE.
+    if (state === "connected") {
+      clearRestartTimer(remoteUid);
+      return;
+    }
+    if (state === "closed") {
+      clearRestartTimer(remoteUid);
+      return;
+    }
+    if (state === "disconnected") {
+      // Transient drop — give it a few seconds to recover before forcing a restart.
+      scheduleIceRestart(remoteUid, DISCONNECT_RESTART_DELAY_MS);
+      return;
+    }
+    if (state === "failed") {
+      clearRestartTimer(remoteUid);
+      void attemptIceRestart(remoteUid);
     }
   };
 
@@ -163,6 +179,48 @@ function getOrCreatePeer(remoteUid: number): RTCPeerConnection {
   const existing = peers.get(remoteUid);
   if (existing) return existing;
   return buildPeerConnection(remoteUid);
+}
+
+function clearRestartTimer(remoteUid: number): void {
+  const timer = restartTimers.get(remoteUid);
+  if (timer) {
+    clearTimeout(timer);
+    restartTimers.delete(remoteUid);
+  }
+}
+
+function scheduleIceRestart(remoteUid: number, delayMs: number): void {
+  if (restartTimers.has(remoteUid)) return;
+  const timer = setTimeout(() => {
+    restartTimers.delete(remoteUid);
+    const pc = peers.get(remoteUid);
+    if (!pc) return;
+    const state = pc.connectionState;
+    if (state === "disconnected" || state === "failed") {
+      void attemptIceRestart(remoteUid);
+    }
+  }, delayMs);
+  restartTimers.set(remoteUid, timer);
+}
+
+async function attemptIceRestart(remoteUid: number): Promise<void> {
+  if (!inVoice) return;
+  const pc = peers.get(remoteUid);
+  if (!pc) return;
+  if (pc.connectionState === "closed") return;
+  // Only one side initiates the restart to avoid glare. The "impolite" peer
+  // (higher UID) leads, mirroring the polite-peer convention used elsewhere
+  // for SDP collisions.
+  if (client.playerID <= remoteUid) return;
+  if (pc.signalingState !== "stable") return;
+  try {
+    const offer = await pc.createOffer({ iceRestart: true });
+    await pc.setLocalDescription(offer);
+    sendSignal(remoteUid, { kind: "offer", data: offer });
+    console.debug(`voice: ICE restart initiated for peer ${remoteUid}`);
+  } catch (e) {
+    console.error(`ICE restart failed for ${remoteUid}`, e);
+  }
 }
 
 function applyPTTToTracks() {
@@ -266,6 +324,7 @@ export function getOutputVolume(): number {
 }
 
 function teardownPeer(uid: number) {
+  clearRestartTimer(uid);
   const pc = peers.get(uid);
   if (pc) {
     try {
