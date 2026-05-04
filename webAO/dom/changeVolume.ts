@@ -1,5 +1,3 @@
-import setCookie from "../utils/setCookie";
-
 declare global {
   interface Window {
     changeSFXVolume: () => void;
@@ -14,7 +12,7 @@ declare global {
 export function changeSFXVolume(): void {
   const sfxAudioElement = document.getElementById("client_sfxaudio") as HTMLAudioElement;
   if (sfxAudioElement) {
-    setCookie("sfxVolume", sfxAudioElement.volume);
+    localStorage.setItem("sfxVolume", sfxAudioElement.volume.toString());
   }
 }
 if (typeof window.changeSFXVolume !== 'function') {
@@ -27,9 +25,9 @@ if (typeof window.changeSFXVolume !== 'function') {
 export function changeTestimonyVolume(): void {
   const testimonyAudioElement = document.getElementById("client_testimonyaudio") as HTMLAudioElement;
   if (testimonyAudioElement) {
-    setCookie(
+    localStorage.setItem(
       "testimonyVolume",
-      testimonyAudioElement.volume
+      testimonyAudioElement.volume.toString()
     );
   }
 }
@@ -43,7 +41,7 @@ if (typeof window.changeTestimonyVolume !== 'function') {
 export function changeShoutVolume(): void {
   const shoutAudioElement = document.getElementById("client_shoutaudio") as HTMLAudioElement;
   if (shoutAudioElement) {
-    setCookie("shoutVolume", shoutAudioElement.volume);
+    localStorage.setItem("shoutVolume", shoutAudioElement.volume.toString());
   }
 }
 if (typeof window.changeShoutVolume !== 'function') {

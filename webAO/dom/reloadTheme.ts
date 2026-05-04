@@ -1,5 +1,4 @@
 import { client } from "../client";
-import setCookie from "../utils/setCookie";
 
 /**
  * Triggered by the theme selector.
@@ -9,7 +8,7 @@ export const reloadTheme = () => {
     (<HTMLSelectElement>document.getElementById("client_themeselect")).value,
   );
 
-  setCookie("theme", client.viewport.getTheme());
+  localStorage.setItem("theme", client.viewport.getTheme());
   (<HTMLAnchorElement>document.getElementById("client_theme")).href =
     `styles/${client.viewport.getTheme()}.css`;
 };

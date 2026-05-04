@@ -1,4 +1,3 @@
-import getCookie from "../utils/getCookie";
 import vanilla_evidence_arr from "../constants/evidence.js";
 import vanilla_background_arr from "../constants/backgrounds.js";
 import { changeMusicVolume } from "../dom/changeMusicVolume";
@@ -36,49 +35,48 @@ export const loadResources = () => {
     evidence_select.add(new Option(evidence));
   });
 
-  // Read cookies and set the UI to its values
+  // Read local storage and set the UI to its values
   (<HTMLInputElement>document.getElementById("OOC_name")).value =
-    getCookie("OOC_name") ||
+    localStorage.getItem("OOC_name") ||
     `web${String(Math.round(Math.random() * 100 + 10))}`;
 
-  // Read cookies and set the UI to its values
-  const cookietheme = getCookie("theme") || "default";
+  const storedTheme = localStorage.getItem("theme") || "default";
 
   (<HTMLOptionElement>(
-    document.querySelector(`#client_themeselect [value="${cookietheme}"]`)
+    document.querySelector(`#client_themeselect [value="${storedTheme}"]`)
   )).selected = true;
   reloadTheme();
 
-  const cookiechatbox = getCookie("chatbox") || "dynamic";
+  const storedChatbox = localStorage.getItem("chatbox") || "dynamic";
 
   (<HTMLOptionElement>(
-    document.querySelector(`#client_chatboxselect [value="${cookiechatbox}"]`)
+    document.querySelector(`#client_chatboxselect [value="${storedChatbox}"]`)
   )).selected = true;
-  setChatbox(cookiechatbox);
+  setChatbox(storedChatbox);
 
   (<HTMLInputElement>document.getElementById("client_mvolume")).value =
-    getCookie("musicVolume") || "1";
+    localStorage.getItem("musicVolume") || "1";
   changeMusicVolume();
   (<HTMLAudioElement>document.getElementById("client_sfxaudio")).volume =
-    Number(getCookie("sfxVolume")) || 1;
+    Number(localStorage.getItem("sfxVolume")) || 1;
   changeSFXVolume();
   (<HTMLAudioElement>document.getElementById("client_shoutaudio")).volume =
-    Number(getCookie("shoutVolume")) || 1;
+    Number(localStorage.getItem("shoutVolume")) || 1;
   changeShoutVolume();
   (<HTMLAudioElement>document.getElementById("client_testimonyaudio")).volume =
-    Number(getCookie("testimonyVolume")) || 1;
+    Number(localStorage.getItem("testimonyVolume")) || 1;
   changeTestimonyVolume();
   (<HTMLInputElement>document.getElementById("client_bvolume")).value =
-    getCookie("blipVolume") || "1";
+    localStorage.getItem("blipVolume") || "1";
   changeBlipVolume();
 
   (<HTMLInputElement>document.getElementById("ic_chat_name")).value =
-    getCookie("ic_chat_name");
+    localStorage.getItem("ic_chat_name");
   (<HTMLInputElement>document.getElementById("showname")).checked = Boolean(
-    getCookie("showname"),
+    localStorage.getItem("showname"),
   );
   showname_click(null);
 
   (<HTMLInputElement>document.getElementById("client_callwords")).value =
-    getCookie("callwords");
+    localStorage.getItem("callwords");
 };

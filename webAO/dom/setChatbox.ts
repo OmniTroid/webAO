@@ -1,6 +1,5 @@
 import { CHATBOX, setCHATBOX } from "../client";
 import chatbox_arr from "../styles/chatbox/chatboxes.js";
-import setCookie from "../utils/setCookie";
 
 /**
  * Set the style of the chatbox
@@ -14,7 +13,7 @@ export function setChatbox(setstyle: string) {
   );
   setCHATBOX(themeselect.value);
 
-  setCookie("chatbox", CHATBOX);
+  localStorage.setItem("chatbox", CHATBOX);
   if (CHATBOX === "dynamic") {
     const style = setstyle.replace("chat", "");
     if (chatbox_arr.includes(style)) {

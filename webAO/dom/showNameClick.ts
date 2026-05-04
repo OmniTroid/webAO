@@ -1,15 +1,13 @@
-import setCookie from "../utils/setCookie";
-
 /**
  * Triggered when the showname checkboc is clicked
  * @param {MouseEvent} event
  */
 export function showname_click(_event: Event | null) {
-  setCookie(
+  localStorage.setItem(
     "showname",
     String((<HTMLInputElement>document.getElementById("showname")).checked),
   );
-  setCookie(
+  localStorage.setItem(
     "ic_chat_name",
     (<HTMLInputElement>document.getElementById("ic_chat_name")).value,
   );

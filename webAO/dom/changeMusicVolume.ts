@@ -1,5 +1,4 @@
 import { client } from "../client";
-import setCookie from "../utils/setCookie";
 
 export const changeMusicVolume = (volume: number = -1) => {
   const clientVolume = Number(
@@ -9,6 +8,6 @@ export const changeMusicVolume = (volume: number = -1) => {
   client.viewport.music.forEach(
     (channel: HTMLAudioElement) => (channel.volume = musicVolume),
   );
-  setCookie("musicVolume", String(musicVolume));
+  localStorage.setItem("musicVolume", String(musicVolume));
 };
 window.changeMusicVolume = changeMusicVolume;

@@ -6,7 +6,6 @@
   "scripts": {
     "babel": "babel ui.js -o ui.b.js",
     "webpack": "webpack",
-    "deploy": "cross-env NODE_ENV=production webpack -p",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "build": "bun build.js",
