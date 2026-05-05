@@ -36,7 +36,9 @@ export const sortFavourites = () => {
     return afav - bfav;
   });
 
-  slots.forEach((slot) => chartable.appendChild(slot));
+  const fragment = document.createDocumentFragment();
+  slots.forEach((slot) => fragment.appendChild(slot));
+  chartable.appendChild(fragment);
 };
 
 /**

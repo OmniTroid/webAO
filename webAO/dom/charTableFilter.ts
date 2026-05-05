@@ -17,7 +17,7 @@ export function chartable_filter(_event: Event) {
     if (character.name.toLowerCase().indexOf(searchname.toLowerCase()) === -1) {
       target.style.display = "none";
     } else {
-      target.style.display = "";
+      target.style.display = "inline-block";
     }
   });
 }
