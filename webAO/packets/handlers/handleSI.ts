@@ -1,5 +1,6 @@
 import { client, extrafeatures, oldLoading } from "../../client";
 import { fetchExtensions } from "../../client/fetchLists";
+import { applyFavourites } from "../../dom/toggleFavourite";
 
 /**
  * Received when the server announces its server info,
@@ -17,8 +18,12 @@ export const handleSI = (args: string[]) => {
   document.getElementById("client_chartable")!.innerHTML = "";
 
   for (let i = 0; i < client.char_list_length; i++) {
-    const demothing = document.createElement("img");
+    // Container wrapping the character icon and the favourite button
+    const slot = document.createElement("div");
+    slot.className = "char-slot";
+    slot.dataset.charid = String(i);
 
+    const demothing = document.createElement("img");
     demothing.className = "demothing";
     demothing.loading = "lazy";
     demothing.id = `demo_${i}`;
@@ -26,8 +31,18 @@ export const handleSI = (args: string[]) => {
     demoonclick.value = `pickChar(${i})`;
     demothing.setAttributeNode(demoonclick);
 
-    document.getElementById("client_chartable")!.appendChild(demothing);
+    const favBtn = document.createElement("button");
+    favBtn.className = "fav-btn";
+    favBtn.title = "Favourite";
+    favBtn.setAttribute("onclick", `toggleFavourite(${i}, event)`);
+    favBtn.textContent = "★";
+
+    slot.appendChild(demothing);
+    slot.appendChild(favBtn);
+    document.getElementById("client_chartable")!.appendChild(slot);
   }
+
+  applyFavourites();
 
   // this is determined at the top of this file
   if (!oldLoading) {

@@ -58,6 +58,7 @@ declare global {
     banPlayer: (id: number) => void;
     hcallback: (_event: any) => void;
     resetSettings: () => void;
+    toggleFavourite: (charid: number, event: Event) => void;
   }
 }
 export {};
