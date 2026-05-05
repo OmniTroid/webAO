@@ -57,6 +57,7 @@ declare global {
     kickPlayer: (id: number) => void;
     banPlayer: (id: number) => void;
     hcallback: (_event: any) => void;
+    resetSettings: () => void;
   }
 }
 export {};
