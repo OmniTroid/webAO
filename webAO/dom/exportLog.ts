@@ -5,7 +5,7 @@ export function exportLog(format: string) {
   const logEl = document.getElementById("client_log");
   if (!logEl) return;
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const timestamp = new Date().toISOString().replace(/[T:.]/g, "-").slice(0, 19);
   const filename = `lemmyao-log-${timestamp}`;
 
   if (format === "txt") {
@@ -62,5 +62,6 @@ function downloadBlob(content: string, filename: string, mimeType: string) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  // Revoke after a short delay to allow the browser to initiate the download
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
