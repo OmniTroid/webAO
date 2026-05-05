@@ -19,12 +19,11 @@ function addEmoteButton(
   emote_item.className = "emote_button";
   emote_item.src = imgurl;
   emote_item.alt = desc;
-  emote_item.title = desc;
   emote_item.onclick = () => {
     window.pickEmotion(i);
   };
   emotesList.appendChild(emote_item);
-  attachSpritePreview(emote_item, charactername, emotename);
+  attachSpritePreview(emote_item, charactername, emotename, desc);
 }
 
 /**
