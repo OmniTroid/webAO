@@ -208,7 +208,7 @@
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.15s, color 0.15s;
+  transition: opacity 0.15s, color 0.15s, text-shadow 0.15s;
   z-index: 1;
 }
 
@@ -218,7 +218,8 @@
 }
 
 .fav-btn.active {
-  color: gold;
+  color: #ffe234;
+  text-shadow: 0 0 6px #ffb800, 0 0 2px #fff;
 }
 
 .char-slot.is-fav {
