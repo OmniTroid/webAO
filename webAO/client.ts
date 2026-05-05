@@ -16,6 +16,7 @@ import { packetHandler } from "./packets/packetHandler";
 import { appendICNotice } from "./client/appendICNotice";
 import { loadResources } from "./client/loadResources";
 import { AO_HOST } from "./client/aoHost";
+import { installVoiceUI } from "./voice/voiceUI";
 import {
   fetchBackgroundList,
   fetchEvidenceList,
@@ -101,6 +102,7 @@ fpPromise
     client.hdid = hdid;
     isLowMemory();
     loadResources();
+    installVoiceUI();
   });
 
 export const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));

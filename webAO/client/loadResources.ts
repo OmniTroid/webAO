@@ -10,6 +10,7 @@ import {
 import { showname_click } from "../dom/showNameClick";
 import { changeBlipVolume } from "../dom/changeBlipVolume";
 import { reloadTheme } from "../dom/reloadTheme";
+import { setFont } from "../dom/setFont";
 const version = process.env.npm_package_version;
 
 /**
@@ -42,9 +43,10 @@ export const loadResources = () => {
 
   const storedTheme = localStorage.getItem("theme") || "default";
 
-  (<HTMLOptionElement>(
+  const themeOption = <HTMLOptionElement>(
     document.querySelector(`#client_themeselect [value="${storedTheme}"]`)
-  )).selected = true;
+  );
+  if (themeOption) themeOption.selected = true;
   reloadTheme();
 
   const storedChatbox = localStorage.getItem("chatbox") || "dynamic";
@@ -79,4 +81,19 @@ export const loadResources = () => {
 
   (<HTMLInputElement>document.getElementById("client_callwords")).value =
     localStorage.getItem("callwords");
+
+  // Restore font setting
+  const storedFont = localStorage.getItem("selectedFont") || "sans-serif";
+  const fontSelect = <HTMLSelectElement>document.getElementById("client_fontselect");
+  if (fontSelect) {
+    const fontOption = <HTMLOptionElement>(
+      fontSelect.querySelector(`[value="${storedFont}"]`)
+    );
+    if (fontOption) fontOption.selected = true;
+    const customFontInput = <HTMLInputElement>document.getElementById("client_customfont");
+    if (customFontInput) {
+      customFontInput.value = localStorage.getItem("customFont") || "";
+    }
+    setFont();
+  }
 };

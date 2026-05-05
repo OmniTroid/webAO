@@ -1,0 +1,187 @@
+/* Umineko no Naku Koro ni inspired theme — golden baroque */
+@import url("https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap");
+
+body {
+  font-family: "IM Fell English", "Georgia", serif;
+  background-color: #1a0e00;
+  color: #f5deb3;
+}
+
+img {
+  image-rendering: auto;
+}
+
+img[src$=".gif"],
+img[src$=".apng"] {
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  97% { opacity: 0.85; }
+}
+
+.menu_text {
+  color: #f5deb3;
+  background-color: #2b1800;
+  border: 1px solid #c9a227;
+  border-radius: 0;
+  padding: 0 6px;
+  font-style: italic;
+  letter-spacing: 0.05em;
+}
+
+.menu_icon {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  background-color: #2b1800;
+  border: 2px solid #c9a227;
+  border-radius: 0;
+  margin-bottom: 2px;
+  line-height: 1.5;
+}
+
+.client_button {
+  margin: 1px;
+  padding: 4px 15px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: bold;
+  font-style: italic;
+  color: #f5deb3;
+  background: linear-gradient(to bottom, #3d2000, #1a0e00);
+  border: 1px solid #c9a227;
+  box-shadow: 0 0 6px rgba(201, 162, 39, 0.4);
+}
+
+.client_button:hover {
+  background: linear-gradient(to bottom, #5c3200, #2b1800);
+  box-shadow: 0 0 12px rgba(201, 162, 39, 0.7);
+}
+
+.evi_icon {
+  width: 70px;
+  min-width: 70px;
+  height: 70px;
+  background-color: #2b1800;
+  outline: 2px solid #c9a227;
+  outline-offset: -2px;
+  margin-right: 2px;
+}
+
+#client_menu {
+  background-color: #1a0e00;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 20px,
+    rgba(201, 162, 39, 0.04) 20px,
+    rgba(201, 162, 39, 0.04) 21px
+  );
+  overflow-y: auto;
+  height: 100%;
+}
+
+#client_log {
+  color: #f5deb3;
+  background-color: #100a00;
+  background-image: radial-gradient(
+    ellipse at center,
+    #1a0e00 0%,
+    #100a00 100%
+  );
+}
+
+#client_log > p {
+  border-top: 1px solid rgba(201, 162, 39, 0.15);
+}
+
+.iclog_name {
+  color: #c9a227;
+  font-style: italic;
+}
+
+#client_ooclog {
+  background-color: #150b00;
+  color: #d4aa70;
+  font-family: "IM Fell English", "Georgia", serif;
+}
+
+#client_inputbox {
+  background-color: #2b1800;
+  color: #f5deb3;
+}
+
+#client_iccontrols {
+  background-color: #1a0e00;
+}
+
+#client_oocinput {
+  background-color: #150b00;
+  color: #d4aa70;
+}
+
+.lm_tab {
+  color: #d4aa70;
+  background-color: #2b1800;
+  border-color: #5a3a00;
+}
+
+.lm_tab.lm_active {
+  color: #fff8e7;
+  background-color: #5c3200;
+  border-color: #c9a227;
+}
+
+#evi_name {
+  background-color: #2b1800;
+  color: #f5deb3;
+  border: 1px solid #c9a227;
+}
+
+#evi_desc {
+  flex: 1 auto;
+  background-color: #150b00;
+  color: #d4aa70;
+  border: 1px solid #5a3a00;
+}
+
+#client_defense_hp {
+  text-align: left;
+}
+
+#client_defense_hp > .health-bar {
+  background-color: #1a4a8a;
+}
+
+#client_prosecutor_hp {
+  text-align: right;
+}
+
+#client_prosecutor_hp > .health-bar {
+  background-color: #8a1a1a;
+}
+
+.health-box {
+  background-color: #1a0e00;
+  height: 20px;
+  width: 50%;
+  margin: 0 auto;
+  border: solid 2px #c9a227;
+  border-radius: 2px;
+  box-sizing: border-box;
+  display: block;
+}
+
+.health-bar {
+  width: 100%;
+  height: 100%;
+  border-radius: 1px;
+  bottom: 0;
+  position: relative;
+  display: inline-block;
+  transition: 1s linear;
+  transition-property: width;
+}

@@ -12,6 +12,7 @@ declare global {
     initCE: () => void;
     initWT: () => void;
     callMod: () => void;
+    toggleVoice: () => void;
     randomCharacterOOC: () => void;
     changeRoleOOC: () => void;
     changeBackgroundOOC: () => void;
@@ -56,6 +57,8 @@ declare global {
     kickPlayer: (id: number) => void;
     banPlayer: (id: number) => void;
     hcallback: (_event: any) => void;
+    resetSettings: () => void;
+    toggleFavourite: (charid: number, event: Event) => void;
   }
 }
 export {};

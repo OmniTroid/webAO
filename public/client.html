@@ -98,6 +98,12 @@
   </head>
 
   <body>
+    <div
+      id="voice_speaker_overlay"
+      class="voice-speaker-overlay"
+      aria-live="polite"
+      aria-label="Voice chat speakers"
+    ></div>
     <div id="client_waiting">
       <noscript>
         <p style="color: red">webAO requires JavaScript to work</p>
@@ -618,6 +624,26 @@
           <b class="menu_icon">&#128680;</b>
           <div class="menu_text" style="color: #ce2727">Call Mod</div>
         </span>
+        <span
+          id="menu_voice"
+          onclick="toggleVoice()"
+          class="menu_button"
+          style="display: none"
+          title="Toggle voice chat"
+        >
+          <b class="menu_icon" id="menu_voice_icon">&#128264;</b>
+          <div class="menu_text" id="menu_voice_text">Voice</div>
+        </span>
+        <div
+          id="menu_voice_openmic_row"
+          style="display: none; text-align: center; font-size: 11px; margin: -6px 15px 4px; white-space: nowrap"
+          title="Always transmit when connected — no need to hold V or press Tap to Talk. Useful for mobile users."
+        >
+          <label style="cursor: pointer">
+            <input type="checkbox" id="voice_openmic_check" style="cursor: pointer" />
+            Always transmit (no PTT)
+          </label>
+        </div>
       </div>
       <div class="hrtext">
         <span id="content_name">Content</span>
@@ -840,6 +866,67 @@
         />
         <br />
         <br />
+        <fieldset id="voice_settings" style="text-align: left; display: none">
+          <legend>&#127908; Voice Chat</legend>
+          <div id="voice_status_line" style="margin-bottom: 6px"></div>
+          <button
+            type="button"
+            id="voice_toggle_button"
+            class="client_button hover_button"
+          >
+            Enable Microphone
+          </button>
+          &nbsp;
+          <button
+            type="button"
+            id="voice_mute_button"
+            class="client_button hover_button"
+          >
+            &#128264; Mute VC Audio
+          </button>
+          <br />
+          <br />
+          <span id="voice_ptt_controls" style="display: none">
+            <button
+              type="button"
+              id="voice_tap_button"
+              class="client_button hover_button"
+              style="min-width: 140px"
+            >
+              &#127908; Tap to Talk
+            </button>
+            <span
+              id="voice_ptt_hint"
+              style="font-size: 11px; opacity: 0.7; margin-left: 6px"
+            >
+              or hold V
+            </span>
+            <br />
+            <br />
+          </span>
+          <label for="voice_input_device">Microphone:</label>
+          <select id="voice_input_device" name="voice_input_device">
+            <option value="">Default</option>
+          </select>
+          <br />
+          <br />
+          <label for="voice_output_volume">Voice playback volume:</label>
+          <input
+            id="voice_output_volume"
+            type="range"
+            min="0"
+            max="1"
+            value="1"
+            step="0.01"
+          />
+          <br />
+          <br />
+          <div
+            id="voice_speaking_list"
+            style="font-size: 11px; opacity: 0.85"
+          ></div>
+        </fieldset>
+        <br />
         <label for="client_themeselect">Menu theme:</label>
         <select
           id="client_themeselect"
@@ -847,12 +934,30 @@
           onchange="reloadTheme()"
         >
           <option value="default" selected>Default</option>
-          <option value="classic">Classic</option>
-          <option value="soj">DD / SoJ</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="classic">Classic (AO1)</option>
+          <option value="soj">Modern (AO2 / DD / SoJ)</option>
           <option value="cyber">Cyber</option>
           <option value="trilogy">Trilogy</option>
+          <option value="danganronpa">Danganronpa</option>
+          <option value="umineko">Umineko</option>
           <option value="speen">April</option>
+          <option value="custom">Custom CSS…</option>
         </select>
+        <div id="client_customcss_row" style="display: none; margin-top: 6px">
+          <label for="client_customcss">Import .css file:</label><br />
+          <input
+            type="file"
+            id="client_customcss"
+            accept=".css"
+            onchange="importCustomCSS(event)"
+          />
+          <br />
+          <span style="font-size: 11px; opacity: 0.7">
+            Your custom CSS is saved locally and reapplied on reconnect.
+          </span>
+        </div>
         <br />
         <br />
         <label for="client_chatboxselect">Chatbox theme:</label>
@@ -895,6 +1000,36 @@
 			<br>
 			<button id="client_modcall" onclick="modcall_test()">Test modcall</button>
 			-->
+        <br />
+        <br />
+        <label for="client_fontselect">Dialogue font:</label>
+        <select
+          id="client_fontselect"
+          name="client_fontselect"
+          onchange="setFont()"
+        >
+          <option value="sans-serif" selected>Default (sans-serif)</option>
+          <option value="Igiari Cyrillic, Ace Attorney, sans-serif">Igiari (Ace Attorney)</option>
+          <option value="Arial, sans-serif">Arial</option>
+          <option value="Georgia, serif">Georgia (serif)</option>
+          <option value="Times New Roman, Times, serif">Times New Roman</option>
+          <option value="Courier New, Courier, monospace">Courier New (monospace)</option>
+          <option value="monospace">Monospace</option>
+          <option value="Comic Sans MS, cursive">Comic Sans</option>
+          <option value="Impact, fantasy">Impact</option>
+          <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+          <option value="IM Fell English, Georgia, serif">IM Fell English (Gothic)</option>
+          <option value="custom">Custom font name…</option>
+        </select>
+        <div id="client_customfont_row" style="display: none; margin-top: 6px">
+          <input
+            type="text"
+            id="client_customfont"
+            placeholder="e.g. 'Noto Sans', sans-serif"
+            oninput="applyCustomFont()"
+            style="width: 100%; box-sizing: border-box"
+          />
+        </div>
         <br />
         <br />
         <p>Ini editing (experimental)</p>
@@ -954,8 +1089,36 @@
         </span>
         <br />
         <br />
+        <button
+          id="client_resetsettings"
+          class="client_button hover_button"
+          onclick="resetSettings()"
+          title="Reset all settings to defaults and turn off all custom features"
+        >
+          Reset All Settings
+        </button>
+        &nbsp;
         <button id="client_disconnect" onclick="DisconnectButton()">
           Disconnect
+        </button>
+        <br />
+        <br />
+        <span>Download chat log:</span>
+        &nbsp;
+        <button
+          class="client_button"
+          onclick="exportLog('txt')"
+          title="Download log as plain text"
+        >
+          ⬇ .txt
+        </button>
+        &nbsp;
+        <button
+          class="client_button"
+          onclick="exportLog('html')"
+          title="Download log as HTML"
+        >
+          ⬇ .html
         </button>
       </span>
 
@@ -963,20 +1126,53 @@
       <span class="menu_content" id="content_4">
         <meta name="frame-title" lang="en" content="About" />
         <img id="about-logo" src="logo-new.png" alt="Attorney Online logo" />
-        <h1 style="line-height: 0.3em">webAO</h1>
+        <h1 style="line-height: 0.3em">LemmyAO</h1>
         <h3 id="client_version">version</h3>
         <p>
-          Client created by
-          <a href="https://github.com/stonedDiscord">@stonedDiscord</a> and
-          fixed up by <a href="https://github.com/oldmud0">@oldmud0</a> and
-          <a href="https://github.com/qubrick">Qubrick</a>.
+          <strong>LemmyAO</strong> is the official
+          <a href="https://github.com/SyntaxNyah/LemmyAO">Skrapegropen webAO fork</a>,
+          maintained by <a href="https://github.com/SyntaxNyah">@SyntaxNyah</a>.
         </p>
         <p>
-          <a href="https://github.com/AttorneyOnline/webAO"
-            >Follow development on our GitHub</a
-          >
+          This fork is dedicated to <strong>Lemmy</strong> — the single biggest reason
+          any of this exists. Without them, there would have been no motivation to keep
+          maintaining the Nyathena server fork, no drive to continue this webAO fork,
+          and none of the new features that have been added along the way. Skrapegropen
+          as a community wouldn't have grown the way it did without their presence —
+          they brought people in, kept things lively, and made the whole trashpit worth
+          caring about. They were, and remain, the main inspiration behind wanting to
+          keep it all alive and worth playing on. This one's for you. 🐀
         </p>
-        <p>Special thanks to Aleks for the first webAO PoC.</p>
+        <hr />
+        <p>
+          <strong>A note on this fork:</strong> LemmyAO is <em>not</em> intended to
+          replace or compete with the upstream
+          <a href="https://github.com/AttorneyOnline/webAO">webAO</a> client. It is
+          purely a community fork maintained for Skrapegropen. All the hard work that
+          makes this possible belongs to the original developers — we are just building
+          on top of what they created.
+        </p>
+        <p>
+          Massive credit and gratitude to the people who built webAO from the ground up:
+        </p>
+        <ul style="text-align: left; display: inline-block">
+          <li>
+            <a href="https://github.com/stonedDiscord">@stonedDiscord</a> —
+            original creator of webAO
+          </li>
+          <li>
+            <a href="https://github.com/oldmud0">@oldmud0</a> — major refactor
+            and fixes
+          </li>
+          <li>
+            <a href="https://github.com/qubrick">Qubrick</a> — fixes and
+            improvements
+          </li>
+          <li>Aleks — first webAO proof of concept</li>
+        </ul>
+        <p>
+          <a href="https://github.com/AttorneyOnline/webAO">Upstream webAO on GitHub</a>
+        </p>
         <p><a href="styles/igiari/readme.txt">Igiari font by Caveras</a></p>
       </span>
     </div>
@@ -984,7 +1180,7 @@
 
   <template id="log">
     <meta name="frame-title" lang="en" content="Log" />
-    <div id="client_log">
+    <div id="client_log" style="position: relative; height: 100%">
       <div class="hrtext">&#8595; log starts here &#8595;</div>
     </div>
   </template>
