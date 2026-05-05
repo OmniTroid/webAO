@@ -1101,6 +1101,25 @@
         <button id="client_disconnect" onclick="DisconnectButton()">
           Disconnect
         </button>
+        <br />
+        <br />
+        <span>Download chat log:</span>
+        &nbsp;
+        <button
+          class="client_button"
+          onclick="exportLog('txt')"
+          title="Download log as plain text"
+        >
+          ⬇ .txt
+        </button>
+        &nbsp;
+        <button
+          class="client_button"
+          onclick="exportLog('html')"
+          title="Download log as HTML"
+        >
+          ⬇ .html
+        </button>
       </span>
 
       <!-- About section -->
@@ -1163,22 +1182,6 @@
     <meta name="frame-title" lang="en" content="Log" />
     <div id="client_log" style="position: relative; height: 100%">
       <div class="hrtext">&#8595; log starts here &#8595;</div>
-    </div>
-    <div style="display: flex; gap: 4px; padding: 4px; background: inherit; flex-shrink: 0">
-      <button
-        class="client_button"
-        onclick="exportLog('txt')"
-        title="Download log as plain text"
-      >
-        ⬇ .txt
-      </button>
-      <button
-        class="client_button"
-        onclick="exportLog('html')"
-        title="Download log as HTML"
-      >
-        ⬇ .html
-      </button>
     </div>
   </template>
 
