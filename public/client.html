@@ -934,12 +934,30 @@
           onchange="reloadTheme()"
         >
           <option value="default" selected>Default</option>
-          <option value="classic">Classic</option>
-          <option value="soj">DD / SoJ</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="classic">Classic AO1</option>
+          <option value="soj">AO2 / DD / SoJ</option>
           <option value="cyber">Cyber</option>
           <option value="trilogy">Trilogy</option>
+          <option value="danganronpa">Danganronpa</option>
+          <option value="umineko">Umineko</option>
           <option value="speen">April</option>
+          <option value="custom">Custom CSS…</option>
         </select>
+        <div id="client_customcss_row" style="display: none; margin-top: 6px">
+          <label for="client_customcss">Import .css file:</label><br />
+          <input
+            type="file"
+            id="client_customcss"
+            accept=".css"
+            onchange="importCustomCSS(event)"
+          />
+          <br />
+          <span style="font-size: 11px; opacity: 0.7">
+            Your custom CSS is saved locally and reapplied on reconnect.
+          </span>
+        </div>
         <br />
         <br />
         <label for="client_chatboxselect">Chatbox theme:</label>
@@ -982,6 +1000,36 @@
 			<br>
 			<button id="client_modcall" onclick="modcall_test()">Test modcall</button>
 			-->
+        <br />
+        <br />
+        <label for="client_fontselect">Dialogue font:</label>
+        <select
+          id="client_fontselect"
+          name="client_fontselect"
+          onchange="setFont()"
+        >
+          <option value="sans-serif" selected>Default (sans-serif)</option>
+          <option value='"Igiari Cyrillic", "Ace Attorney", sans-serif'>Igiari (Ace Attorney)</option>
+          <option value="Arial, sans-serif">Arial</option>
+          <option value="Georgia, serif">Georgia (serif)</option>
+          <option value="'Times New Roman', Times, serif">Times New Roman</option>
+          <option value="'Courier New', Courier, monospace">Courier New (monospace)</option>
+          <option value="monospace">Monospace</option>
+          <option value="'Comic Sans MS', cursive">Comic Sans</option>
+          <option value="'Impact', fantasy">Impact</option>
+          <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+          <option value="'IM Fell English', Georgia, serif">IM Fell English (Gothic)</option>
+          <option value="custom">Custom font name…</option>
+        </select>
+        <div id="client_customfont_row" style="display: none; margin-top: 6px">
+          <input
+            type="text"
+            id="client_customfont"
+            placeholder="e.g. 'Noto Sans', sans-serif"
+            oninput="applyCustomFont()"
+            style="width: 100%; box-sizing: border-box"
+          />
+        </div>
         <br />
         <br />
         <p>Ini editing (experimental)</p>
@@ -1050,17 +1098,23 @@
       <span class="menu_content" id="content_4">
         <meta name="frame-title" lang="en" content="About" />
         <img id="about-logo" src="logo-new.png" alt="Attorney Online logo" />
-        <h1 style="line-height: 0.3em">webAO</h1>
+        <h1 style="line-height: 0.3em">LemmyAO</h1>
         <h3 id="client_version">version</h3>
         <p>
-          Client created by
-          <a href="https://github.com/stonedDiscord">@stonedDiscord</a> and
-          fixed up by <a href="https://github.com/oldmud0">@oldmud0</a> and
+          <strong>LemmyAO</strong> is the official
+          <a href="https://github.com/SyntaxNyah/LemmyAO">Skrapegropen webAO fork</a>,
+          maintained by <a href="https://github.com/SyntaxNyah">@SyntaxNyah</a>.
+          Lemmy was an inspiration to continue updating and improving this client.
+        </p>
+        <p>
+          Original <strong>webAO</strong> client created by
+          <a href="https://github.com/stonedDiscord">@stonedDiscord</a>, fixed
+          up by <a href="https://github.com/oldmud0">@oldmud0</a> and
           <a href="https://github.com/qubrick">Qubrick</a>.
         </p>
         <p>
           <a href="https://github.com/AttorneyOnline/webAO"
-            >Follow development on our GitHub</a
+            >Upstream webAO on GitHub</a
           >
         </p>
         <p>Special thanks to Aleks for the first webAO PoC.</p>
@@ -1071,8 +1125,24 @@
 
   <template id="log">
     <meta name="frame-title" lang="en" content="Log" />
-    <div id="client_log">
+    <div id="client_log" style="position: relative; height: 100%">
       <div class="hrtext">&#8595; log starts here &#8595;</div>
+    </div>
+    <div style="display: flex; gap: 4px; padding: 4px; background: inherit; flex-shrink: 0">
+      <button
+        class="client_button"
+        onclick="exportLog('txt')"
+        title="Download log as plain text"
+      >
+        ⬇ .txt
+      </button>
+      <button
+        class="client_button"
+        onclick="exportLog('html')"
+        title="Download log as HTML"
+      >
+        ⬇ .html
+      </button>
     </div>
   </template>
 

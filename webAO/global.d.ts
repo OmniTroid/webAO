@@ -13,8 +13,12 @@ declare global {
     pickEmotion: (emo: number) => void;
     pickEvidence: (evidence: number) => void;
     reloadTheme: () => void;
+    importCustomCSS: (event: Event) => void;
     resizeChatbox: () => void;
     setChatbox: (setstyle: string) => void;
+    setFont: () => void;
+    applyCustomFont: () => void;
+    exportLog: (format: string) => void;
     showname_click: (_event: Event | null) => void;
     switchPanTilt: () => Promise<void>;
     updateActionCommands: (side: string) => void;

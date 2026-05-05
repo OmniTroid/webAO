@@ -1,0 +1,160 @@
+body {
+  font-family: sans-serif;
+  background-color: #f5f5f5;
+  color: #222;
+}
+
+img {
+  image-rendering: auto;
+}
+
+img[src$=".gif"],
+img[src$=".apng"] {
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.client_button {
+  margin: 1px;
+  padding: 2px 15px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+  background-color: #e8e8e8;
+  border-radius: 3px;
+  border: 1px solid #bbb;
+  box-shadow: 1px 1px inset rgba(0, 0, 0, 0.05);
+}
+
+.client_button:hover {
+  background-color: #d5d5d5;
+  border-color: #888;
+}
+
+.evi_icon {
+  width: 70px;
+  min-width: 70px;
+  height: 70px;
+  background-color: #ddd;
+  outline: 2px ridge #aaa;
+  outline-offset: -2px;
+  margin-right: 2px;
+}
+
+#client_menu {
+  background-color: #ececec;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.menu_content {
+  background-color: #ececec;
+  color: #222;
+}
+
+.menu_text {
+  color: #333;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+.menu_icon {
+  display: inline-block;
+  width: 1.5em;
+  height: 1.5em;
+  background-color: #ddd;
+  border: 2px ridge #aaa;
+  border-radius: 2px;
+  margin-bottom: 2px;
+  line-height: 1.5;
+}
+
+#client_log {
+  color: #222;
+  background-color: #fafafa;
+}
+
+#client_ooclog {
+  background-color: #fff;
+  color: #333;
+}
+
+#client_inputbox {
+  background-color: #fff;
+  color: #222;
+}
+
+#client_iccontrols {
+  background-color: #ececec;
+}
+
+#client_oocinput {
+  background-color: #ececec;
+  color: #333;
+}
+
+.lm_tab {
+  color: #444;
+  background-color: #ddd;
+  border-color: #bbb;
+}
+
+.lm_tab.lm_active {
+  color: #111;
+  background-color: #fff;
+  border-color: #aaa;
+}
+
+#evi_name {
+  background-color: #fff;
+  color: #222;
+  border: 1px solid #ccc;
+}
+
+#evi_desc {
+  flex: 1 auto;
+  background-color: #f0f0f0;
+  color: #222;
+  border: 1px solid #ccc;
+}
+
+#client_defense_hp {
+  text-align: left;
+}
+
+#client_defense_hp > .health-bar {
+  background-color: #1976d2;
+}
+
+#client_prosecutor_hp {
+  text-align: right;
+}
+
+#client_prosecutor_hp > .health-bar {
+  background-color: #c62828;
+}
+
+.health-box {
+  background-color: #ddd;
+  height: 20px;
+  width: 50%;
+  margin: 0 auto;
+  border: solid 2px #aaa;
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: block;
+}
+
+.health-bar {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  bottom: 0;
+  position: relative;
+  display: inline-block;
+  transition: 1s linear;
+  transition-property: width;
+}
