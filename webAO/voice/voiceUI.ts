@@ -23,6 +23,7 @@ import {
   isVCMuted,
   setVCMuted,
 } from "./voice";
+
 let installed = false;
 let menuButton: HTMLElement | null = null;
 let menuIcon: HTMLElement | null = null;
