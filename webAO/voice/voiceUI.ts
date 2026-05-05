@@ -23,9 +23,6 @@ import {
   isVCMuted,
   setVCMuted,
 } from "./voice";
-import getCookie from "../utils/getCookie";
-import setCookie from "../utils/setCookie";
-
 let installed = false;
 let menuButton: HTMLElement | null = null;
 let menuIcon: HTMLElement | null = null;
@@ -278,7 +275,7 @@ async function populateDeviceList(): Promise<void> {
       deviceSelect.add(new Option(label, device.deviceId));
       idx++;
     }
-    const saved = getCookie("voiceInputDevice");
+    const saved = localStorage.getItem("voiceInputDevice");
     const target = previousValue || saved || getInputDeviceId() || "";
     if (target) {
       const found = Array.from(deviceSelect.options).some(
@@ -333,7 +330,7 @@ export async function toggleVoice(): Promise<void> {
 function onVCMuteClick() {
   const muted = !isVCMuted();
   setVCMuted(muted);
-  setCookie("vcMuted", muted ? "1" : "0");
+  localStorage.setItem("vcMuted", muted ? "1" : "0");
   render();
 }
 
@@ -371,7 +368,7 @@ function onWindowBlur() {
 async function onDeviceChange() {
   if (!deviceSelect) return;
   const id = deviceSelect.value;
-  setCookie("voiceInputDevice", id);
+  localStorage.setItem("voiceInputDevice", id);
   try {
     await setInputDevice(id);
   } catch (e) {
@@ -386,7 +383,7 @@ function onOutputVolumeChange() {
   if (!outputVolumeSlider) return;
   const v = Number(outputVolumeSlider.value);
   setOutputVolume(v);
-  setCookie("voiceOutputVolume", String(v));
+  localStorage.setItem("voiceOutputVolume", String(v));
 }
 
 export function installVoiceUI(): void {
@@ -429,7 +426,7 @@ export function installVoiceUI(): void {
   speakerOverlay = document.getElementById("voice_speaker_overlay");
 
   if (vcMuteButton) {
-    const savedMuted = getCookie("vcMuted") === "1";
+    const savedMuted = localStorage.getItem("vcMuted") === "1";
     if (savedMuted) {
       setVCMuted(true);
     }
@@ -445,14 +442,14 @@ export function installVoiceUI(): void {
     tapButton.addEventListener("click", onTapButtonClick);
   }
   if (openMicCheck) {
-    const savedOpenMic = getCookie("voiceOpenMic") === "1";
+    const savedOpenMic = localStorage.getItem("voiceOpenMic") === "1";
     if (savedOpenMic) {
       setLocalOpenMic(true);
     }
     openMicCheck.addEventListener("change", () => {
       const enabled = openMicCheck!.checked;
       setLocalOpenMic(enabled);
-      setCookie("voiceOpenMic", enabled ? "1" : "0");
+      localStorage.setItem("voiceOpenMic", enabled ? "1" : "0");
       render();
     });
   }
@@ -462,7 +459,7 @@ export function installVoiceUI(): void {
     });
   }
   if (outputVolumeSlider) {
-    const stored = getCookie("voiceOutputVolume");
+    const stored = localStorage.getItem("voiceOutputVolume");
     if (stored) {
       outputVolumeSlider.value = stored;
       setOutputVolume(Number(stored));
