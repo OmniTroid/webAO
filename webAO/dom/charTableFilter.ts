@@ -1,6 +1,6 @@
 import { client } from "../client";
 /**
- * Triggered when the music search bar is changed
+ * Triggered when the character search bar is changed
  * @param {MouseEvent} event
  */
 export function chartable_filter(_event: Event) {
@@ -9,11 +9,15 @@ export function chartable_filter(_event: Event) {
   )).value;
 
   client.chars.forEach((character: any, charid: number) => {
-    const demothing = document.getElementById(`demo_${charid}`)!;
+    const img = document.getElementById(`demo_${charid}`);
+    if (!img) return;
+    // Hide/show the container slot so the fav-btn moves with the icon
+    const slot = img.parentElement as HTMLElement;
+    const target = slot && slot.classList.contains("char-slot") ? slot : img;
     if (character.name.toLowerCase().indexOf(searchname.toLowerCase()) === -1) {
-      demothing.style.display = "none";
+      target.style.display = "none";
     } else {
-      demothing.style.display = "inline-block";
+      target.style.display = "inline-block";
     }
   });
 }

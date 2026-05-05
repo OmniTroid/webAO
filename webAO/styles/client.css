@@ -175,14 +175,55 @@
 }
 
 .demothing {
-  display: inline-block;
+  display: block;
   height: 60px;
   width: 60px;
   max-width: 60px;
   max-height: 60px;
-  margin: 3px;
   border: 1px solid #000;
+  cursor: pointer;
+}
+
+.char-slot {
+  position: relative;
+  display: inline-block;
+  margin: 3px;
   vertical-align: top;
+}
+
+.fav-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  line-height: 1;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #bbb;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  z-index: 1;
+}
+
+.char-slot:hover .fav-btn,
+.fav-btn.active {
+  opacity: 1;
+}
+
+.fav-btn.active {
+  color: gold;
+}
+
+.char-slot.is-fav {
+  outline: 2px solid gold;
+  outline-offset: -2px;
 }
 
 .noini {
